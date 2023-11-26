@@ -1,0 +1,64 @@
+
+
+.justify-content-center{
+ 
+    /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);  */
+}
+.col-md-3{
+    width: 25%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); 
+}
+.col-md-8{
+  
+    margin-left: 10px;
+    width: 74%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); 
+}
+.content{
+    padding: 10px 10px 10px 10px;
+  
+}
+.col-sm-1{
+padding-top: 4%;
+}
+.carousel-inner-account{
+    margin: 10% ;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+
+    background-color: #000000;
+
+}
+.nav-pills .nav-link {
+    color: black;
+
+}
+.account{
+    border-radius: 100%;
+
+}
+
+.text-center {
+    margin-top: 2%;
+    text-align: center!important;
+}
+#menu_side .menu-item ul li a {
+    color: #303030 !important;
+    font-size: 18px;
+    padding: 6px;
+    /* border: 1px solid #ced4da; */
+}
+#menu_side .menu-item ul li a:hover {
+    color: #f15f2f !important;
+    font-weight: bold;
+    font-size: 24px;
+    padding: 6px;
+    /* border: 1px solid #ced4da; */
+    /* background: #ced4da; */
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); 
+  
+}
+/* Account */
+
+

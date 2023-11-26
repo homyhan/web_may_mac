@@ -1,0 +1,15 @@
+.carousel-inner img {
+    width: 100%; /* Set width to 100% */
+    margin: auto;
+    min-height:200px;
+}
+
+/* Hide the carousel text when the screen is less than 1200 pixels wide */
+@media (max-width: 1200px) {
+  .carousel-caption {
+    display: none; 
+  }
+}
+.well{
+    margin-top: 20px;
+}

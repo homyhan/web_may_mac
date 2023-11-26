@@ -1,0 +1,474 @@
+*{
+  font-family: 'Roboto Condensed', sans-serif;
+}
+.hide {display:none!important }
+
+// key-main
+$font-stack: 400;
+$font-bold: 700;
+$color-primary: #303030;
+$color-hover-org: #f15f2f;
+$color_textmenu: #bdbdbd;
+$bg-color: #f1f1f1;
+//my-edit
+body {
+  box-sizing: border-box;
+  font-weight: $font-stack;
+}
+//extends
+ul {
+  list-style: none;
+  li {
+    a,
+    a:hover {
+      text-decoration: none;
+    }
+  }
+}
+.poster {
+  img {
+    width: 100%;
+  }
+}
+%make-menu-sub {
+  .box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    &--devide::after {
+      content: "";
+      position: absolute;
+      top: 20px;
+      right: 0;
+      width: 3px;
+      height: 400px;
+      border-right: 2px dashed #bdbdbd;
+    }
+    h3 {
+      font-size: 25px;
+      font-weight: $font-bold;
+      a {
+        display: block;
+        color: #f9f9f9;
+      }
+    }
+    .box__group {
+      ul {
+        margin: 20px 0;
+        padding: 0;
+      }
+      .line_head {
+        font-weight: 600;
+        display: block;
+        color: $color_textmenu;
+      }
+      a {
+        display: block;
+        width: 100%;
+        padding: 5px 0;
+        font-weight: $font-stack;
+        color: $color_textmenu;
+        text-transform: unset;
+        &:hover {
+          color: $color-hover-org;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+// header
+header {
+  z-index: 3;
+  position: relative;
+  background-color: #fff;
+  &.sticky{
+    position: fixed;
+    width: 100%;
+    top: 0;
+  }
+  .container {
+    padding: 0;
+    // thanh chuc nang
+    #top-head {
+      padding: 5px 0;
+      ul {
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 0;
+        height: 100%;
+        li {
+          padding: 0 15px;
+          a {
+            color: $color-primary;
+            margin-left: 5px;
+            &:hover {
+              color: $color-hover-org;
+            }
+          }
+        }
+      }
+      // thanh tim kiem
+      #searchBox {
+        height: 100%;
+        .form-group {
+          height: 100%;
+          align-items: center;
+          #searchInput {
+            width: 100%;
+            font-size: 12px;
+            box-shadow: none;
+            border-color: #919191;
+            border-right: none;
+            border-radius: 5px 0 0 5px;
+            &:focus {
+              border-color: $color-hover-org;
+              font-weight: 600;
+            }
+          }
+          #searchBtn {
+            width: 32px;
+            height: 32px;
+            background-color: $color-primary;
+            color: $bg-color;
+            border: 1px solid #919191;
+            border-radius: 0 5px 5px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+      }
+    }
+    // thanh menu
+    #sidebar {
+      padding: 12px 0;
+      ul.menu {
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+        li.menu-item {
+          height: 100%;
+          padding: 0 20px;
+          position: relative;
+          & > a {
+            font-weight: $font-bold;
+            color: $color-primary;
+            text-transform: uppercase;
+            height: 100%;
+            align-items: center;
+            h4 {
+              margin-right: 10px;
+            }
+            &:hover {
+              color: $color-hover-org;
+              .fa-chevron-down {
+                transform: rotate(180deg);
+                transition: 0.5s all ease;
+              }
+            }
+          }
+          &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-60%);
+            width: 3px;
+            height: 25px;
+            border-right: 2px solid #e6e5e5;
+          }
+          &:last-child::after {
+            border-right-color: transparent;
+          }
+          &:last-child {
+            transform: translateY(-5px);
+          }
+          .menu-sub {
+            position: absolute;
+            top: 100%;
+            left: -50%;
+            z-index: 2;
+            min-width: 400px;
+            background-color: #4c4c4c;
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            padding: 32px;
+            .menu-link{
+              border-bottom: 2px dashed #f1f1f1;
+              align-items: center;
+              padding: 6px;
+              h5{
+                color: #f1f1f1;
+                padding: 10px 0;
+                display: block;
+                font-weight: $font-stack;
+                font-weight: 800;
+              }
+              img{
+                margin-right: 12px;
+              }
+            }
+            &::after {
+              content: "";
+              position: absolute;
+              top: -10px;
+              left: 50%;
+              width: 20px;
+              height: 20px;
+              transform: rotate(45deg);
+              background-color: #4c4c4c;
+            }
+          }
+          &:hover {
+            .menu-sub {
+              display: grid;
+            }
+          }
+        }
+      }
+      
+    }
+  }
+}
+// footer
+footer {
+  background-color: #000;
+  h4{
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-left: 30px;
+  }
+  a, h4, li, p{
+   color: #fff; 
+  }
+  a:hover{
+    color: #f15f2f;
+  }
+  form{
+    .form-group{
+      background-color: transparent;
+      input{
+        border: 6px !important;
+      }
+    }
+    .btn-primary{
+      background-color: #f15f2f;
+      border: none;
+    }
+  }
+}
+// main nho xoa toi
+#main {
+  padding: 32px 0 !important;
+
+}
+// to top button
+#to_top_btn {
+  position: fixed;
+  bottom: 50px;
+  right: 20px;
+  background-color: $color-hover-org;
+  outline: none;
+  box-shadow: none;
+  display: none;
+  transition: 0.5s ease-in-out;
+  .fa-chevron-up {
+    color: #fefefe;
+    font-size: 20px;
+  }
+}
+// carousel
+.carousel{
+  .carousel-indicators{
+    button{
+      opacity: 0.3;
+      background-color: $color-hover-org !important;
+      height: 5px;
+      width: 50px;
+      &.active{
+        opacity: 1;
+      }
+    }
+  }
+}
+
+form{
+  .form-group {
+    background-color: #f9f9f9;
+    input,
+    button {
+      border: 1px solid $color_textmenu;
+      display: block;
+      width: 100%;
+      border-radius: 6px;
+      background-color: #f9f9f9;
+      outline: none;
+      box-shadow: none;
+      &:focus {
+        font-weight: 700;
+      }
+    }
+    button {
+      a {
+        display: block;
+        width: 100%;
+        background-color: $color-primary;
+        text-decoration: none;
+        color: #fefefe;
+        font-size: 20px;
+      }
+    }
+  }
+  #forget_pass {
+    margin-bottom: 15px;
+    color: $color-primary;
+  }
+}
+.products{
+  .row--grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 12px;
+    row-gap: 12px;
+    &.grid-4{
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .card{
+    width: 100%;
+    .card-img-top{
+      height: 300px;
+      object-fit: cover;
+      object-position: 0% 70%;
+    }
+    .card-body{
+      padding: 10px;
+      .card-title{
+        font-size: 20px;
+      }
+      .card-price{
+        span{
+          font-size: 16px;
+        }
+      }
+      .card-btn{
+        margin: 0 8px;
+        display: flex;
+        justify-content: space-between;
+        .btn{
+          display: block;
+          &.btn-like{
+            width: 20%;
+            border: 2px solid #bdbdbd;
+            &.active{
+              background-color: #f15f2f;
+              border-color: #f15f2f;
+              .fa-heart{
+                color: #fff;
+              }
+            }
+          }
+          &.btn-primary{
+            width: 20%;
+            background-color: $color-hover-org;
+            border: none;
+          }
+          &.btn-dark{
+            width: 50%;
+            border: none;
+          }
+        }
+      }
+    }
+    &:hover{
+      cursor: pointer;
+      .card-img-top{
+        object-position: 100% 20%;
+        transition: 0.3s all ease-in-out;
+      }
+    }
+    
+  }
+  .pagination{
+    margin: 32px 0;
+    .page-item{
+      margin: 3px;
+      .page-link{
+        border-radius: 6px;
+        color: #333;
+        background-color: #bdbdbd;
+        border: none;
+        &:hover{
+          background-color: #333;
+          color: #fff;
+        }
+      }
+      &.active{
+        .page-link{
+          background-color: #333;
+          color: #fff;
+          font-weight: 700 !important;
+        }
+      }
+      &.disabled{
+        opacity: 0.5 !important;
+      }
+      
+    }
+  }
+}
+#blogs{
+  .card{
+    .card-img-top{
+      object-fit: cover;
+      object-position: 0% 10%;
+      height: 200px;
+      background-color: #e6e5e5;
+    }
+    .card-body{
+      color: $color-primary !important;
+      h4{
+          font-size: 22px;
+          font-weight: 700;
+      }
+      i{
+        text-decoration: underline;
+      }
+    }
+  }
+}
+#hip_page {
+  width: 100%;
+  height: 100%;
+  margin-top: 20px;
+  top: 5px;
+  justify-self: start;
+  align-items: center;
+  border-radius: 3px;
+  a {
+    display: block;
+    border-right: 1px solid #fefefe;
+    background-color: $color-hover-org;
+    color: #fefefe !important;
+    border-radius: 6px;
+    margin: 0 6px;
+    &:hover,
+    &.active {
+      background-color: $color-primary;
+    }
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+.main__header{
+  background-color: #eee;
+  padding: 12px 24px;
+  margin: 0 12px 24px;
+  border-radius: 6px;
+  h1{
+    font-size: 30px;
+    margin: 8px 0;
+  }
+}

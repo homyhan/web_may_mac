@@ -1,0 +1,29 @@
+/* width */
+.mdi{
+  font-size: x-large;
+}
+.navbar-item.has-user-avatar .user-avatar{
+  width: 199px;
+}
+.buttons.right {
+  justify-content: unset;
+}
+.text-end {
+  text-align: right!important;
+}
+
+.col-lg-8 {
+    flex: 0 0 auto;
+    width: 66.66666667%;
+}
+.col-lg-3 {
+  flex: 0 0 auto;
+  width: 25%;
+}
+.justify-content-between{
+  display: flex;
+}
+.justify-content-end{
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,0 +1,22 @@
+
+
+.justify-content-center{
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); 
+}
+
+.col-md-7{
+    padding-top: 5%;
+    
+   
+}
+
+.btn-dark{
+    width: 100%;
+}
+.justify-content-center-login{
+margin-left: 34%;
+}
+
+#login_btn{
+    width: 100%;
+}

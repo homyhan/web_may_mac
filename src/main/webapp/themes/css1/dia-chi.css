@@ -1,0 +1,28 @@
+.item_sodiachi, .block_thongtin_account {
+    padding: 2%;
+    border: 1px solid #e5e5e5;
+  
+
+   
+}
+.name_diachi{
+    width: 90%;
+    float: left;
+}
+.default{
+   
+    width: 10%;
+ float:  right;
+}
+.default-color{
+    color: red;
+}
+.btn-dark{
+    margin-top: 1%;
+   margin-bottom: 2%;
+}
+
+a {
+    color: white;
+}
+
