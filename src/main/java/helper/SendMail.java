@@ -13,8 +13,8 @@ import javax.mail.internet.MimeMessage;
 public class SendMail {
 	public static boolean sendMail(String to, String subject, String text) {
 		//https://www.youtube.com/watch?v=0ignaDR1UOs
-		final String email = "trucmainguyen02@gmail.com";//email gui thu
-		final String password = "pbpfganrroiylmuq";
+		final String email = "thienan21215@gmail.com";//email gui thu
+		final String password = "wqubwaintvcbufnn";
 		Properties props = new Properties();
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
@@ -46,6 +46,6 @@ public class SendMail {
 	public static void main(String[] args) {
 		String textMail = "<a href=\"localhost:8080/tai-khoan/reset-password?username="+"mainguyen"+"&token="+Contants.PASSWORD_DEFAULT+"\">link</a>";
 		System.out.println(textMail);
-		System.out.println(sendMail("trucmainguyen02@gmail.com", "MBA", textMail));
+		System.out.println(sendMail("thienan21215@gmail.com", "MBA", textMail));
 	}
 }
