@@ -184,6 +184,26 @@
 										<a href="/voucher" class="col-lg d-flex">
 											<i class="fas fa-ticket-alt" width="24"></i>
 										</a>
+
+										<%
+											User auth1 = (User) session.getAttribute("userLogin");
+											if (auth == null) {
+										%>
+										<span></span>
+										<%
+										} else {
+										%>
+
+										<a href="" class="col-lg d-flex" style="margin-right: 15px">
+											<i class="fa fa-bell" width="24"></i>
+										</a>
+
+										<!-- -- -->
+										<!-- Thong tin khi ddang nhaap -->
+										<%
+											}
+										%>
+
 									</li>
 
 								</ul>
