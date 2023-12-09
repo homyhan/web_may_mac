@@ -99,6 +99,13 @@ public class InvoiceService {
 		return result;
 	}
 
+	public static List<Order> getDataOrderHistory(int iduser) {
+		return JDBIConnector.get().withHandle(handle -> {
+			return handle.createQuery("select * from orderHistory where iduser= ?").bind(0, iduser).mapToBean(Order.class).stream().collect(Collectors.toList());
+		});
+	}
+
+
 	public static void main(String[] args) {
 
 //		List<Invoice> data = getData();
