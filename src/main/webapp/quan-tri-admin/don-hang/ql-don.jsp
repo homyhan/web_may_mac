@@ -191,12 +191,12 @@
 												</button>
 											</form>
 
-											<a
-													href="/admin/edit-don-hang?idOrder=<%=result.get(i).getInvoice().getIdorder()%>">
-												<button class="button small green --jb-modal" type="button">
-													<span class="icon"><span class="mdi mdi-pencil"></span></span>
-												</button>
-											</a>
+<%--											<a--%>
+<%--													href="/admin/edit-don-hang?idOrder=<%=result.get(i).getInvoice().getIdorder()%>">--%>
+<%--												<button class="button small green --jb-modal" type="button">--%>
+<%--													<span class="icon"><span class="mdi mdi-pencil"></span></span>--%>
+<%--												</button>--%>
+<%--											</a>--%>
 
 
 											<form action="/admin/don-hang/updade-status" method="POST">

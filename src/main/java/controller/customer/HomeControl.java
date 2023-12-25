@@ -41,16 +41,16 @@ public class HomeControl extends HttpServlet {
             List<Order> orderHistoryList = InvoiceService.getDataOrderHistory(info.getIduser());
 //        request.setAttribute("userAdminList", userAdminList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
 //        request.getRequestDispatcher("/quan-tri-admin/khach-hang/khach-hang.jsp").forward(request, response);
-            System.out.println("Order history");
-            System.out.println(orderHistoryList);
-            if (orderHistoryList.size()!=0){
-                System.out.println("Canh bao");
-                sendEmail(info.getEmail());
-//                session.setAttribute("emailSent", true);
-                return;
-            }else{
-                System.out.println("Khong canh bao");
-            }
+//            System.out.println("Order history");
+//            System.out.println(orderHistoryList);
+//            if (orderHistoryList.size()!=0){
+//                System.out.println("Canh bao");
+//                sendEmail(info.getEmail());
+////                session.setAttribute("emailSent", true);
+//                return;
+//            }else{
+//                System.out.println("Khong canh bao");
+//            }
 
         }
 
