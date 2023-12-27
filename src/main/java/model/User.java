@@ -17,6 +17,9 @@ public class User implements Serializable {
 	private int idrole;
 	private String idfacebook;
 
+	private String publicKey; // Thêm thuộc tính public key
+	private String privateKey; // Thêm thuộc tính private key
+
 	// required default constructor
 	public User() {
 		super();
@@ -25,7 +28,7 @@ public class User implements Serializable {
 	@ConstructorProperties({ "iduser", "lastname", "firstname", "email", "username", "phone", "password", "status",
 			"role", "idrole" })
 	public User(int iduser, String lastname, String firstname, String email, String username, String phone,
-			String password, int status, int role, int idrole) {
+				String password, int status, int role, int idrole) {
 		super();
 		this.iduser = iduser;
 		this.lastname = lastname;
@@ -40,7 +43,7 @@ public class User implements Serializable {
 	}
 
 	public User(String lastname, String firstname, String email, String username, String phone, String password,
-			int status, int role) {
+				int status, int role, String publicKey, String privateKey) {
 		this.lastname = lastname;
 		this.firstname = firstname;
 		this.email = email;
@@ -49,6 +52,8 @@ public class User implements Serializable {
 		this.password = password;
 		this.status = status;
 		this.role = role;
+		this.publicKey = publicKey;
+		this.privateKey = privateKey;
 	}
 
 	public User(String idfacebook, int role, int status) {
@@ -147,10 +152,33 @@ public class User implements Serializable {
 	}
 
 	@Override
+//	public String toString() {
+//		return "User [iduser=" + iduser + ", lastname=" + lastname + ", firstname=" + firstname + ", email=" + email
+//				+ ", username=" + username + ", phone=" + phone + ", password=" + password + ", status=" + status
+//				+ ", role=" + role + ", idrole=" + idrole + ", idfacebook=" + idfacebook + "]";
+//	}
 	public String toString() {
 		return "User [iduser=" + iduser + ", lastname=" + lastname + ", firstname=" + firstname + ", email=" + email
 				+ ", username=" + username + ", phone=" + phone + ", password=" + password + ", status=" + status
-				+ ", role=" + role + ", idrole=" + idrole + ", idfacebook=" + idfacebook + "]";
+				+ ", role=" + role + ", idrole=" + idrole + ", idfacebook=" + idfacebook + ", publicKey=" + publicKey
+				+ ", privateKey=" + privateKey + "]";
+	}
+
+	// Thêm các phương thức getter và setter cho public key và private key
+	public String getPublicKey() {
+		return publicKey;
+	}
+
+	public void setPublicKey(String publicKey) {
+		this.publicKey = publicKey;
+	}
+
+	public String getPrivateKey() {
+		return privateKey;
+	}
+
+	public void setPrivateKey(String privateKey) {
+		this.privateKey = privateKey;
 	}
 
 }

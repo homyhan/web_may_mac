@@ -1,7 +1,11 @@
 package controller.customer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.security.*;
 import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +23,7 @@ import DAO.impl.VoucherDaO;
 import controller.OrderFeeController;
 import helper.Contants;
 import model.*;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import response.ProductCartResponse;
 import service.AddressService;
 import service.InvoiceService;
@@ -68,7 +73,11 @@ public class ThanhToan extends HttpServlet {
 		switch (action) {
 
 		case "/checkout":
-			checkout(request, response);
+			try {
+				checkout(request, response);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 			break;
 
 		default:
@@ -81,7 +90,7 @@ public class ThanhToan extends HttpServlet {
 	}
 
 	private void checkout(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+			throws Exception {
 		System.out.println("check out");
 		HttpSession session = request.getSession(true);
 		if (session.getAttribute("productCartList") == null) {
@@ -98,6 +107,7 @@ public class ThanhToan extends HttpServlet {
 			response.sendRedirect("/tai-khoan/update-address");
 			return;
 		}
+
 		// login thành công đã có user
 		User info = (User) session.getAttribute("userLogin");
 		Address address = (Address) session.getAttribute("addressDefault");
@@ -137,38 +147,90 @@ public class ThanhToan extends HttpServlet {
 		}
 
 		Order order = new Order(iduser, idaddress, subtotal, itemdiscount, shipping, idcoupons, grandtotal, 0, "");
-		int idorder = OrderService.insertOrder(order);
-		System.out.println("insert order success");
-		System.out.println(idorder);
-		if (idorder <= 0) {
-			System.out.println("error insert order");
+		Order orderKhac = new Order(40, 11111, 100.0f, itemdiscount, shipping, idcoupons, grandtotal, 0, "");
+		// TẠO CHỮ KÝ SỐ
+		String privateKey = request.getParameter("privateKey");
+		PrivateKey privateKeyConverted;
+		PublicKey publicKeyConverted;
+		if(privateKey.length()==0){
+			System.out.println("Nhap privatekey");
+			return;
+		}else{
+			RSA rsa = new RSA();
+			privateKeyConverted = rsa.getPrivateKeyFromString(privateKey);
+			publicKeyConverted = rsa.getPublicKeyFromString("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA13b0LspgrkM8ikj9X1dNBH7/9sNLF+egHTIMt/Y9TqAkH4hVihbCPkJL5ILOSEfupIhAhgb1HQQ9/563uKrOTeldMfRqBDq5Kr4S1vSfB0yltO1KzUi+JrC/8j6S9Jh5tIiNMp0ubIe1Fr413Sf2ydMD1oB9Mpq3y3Fs0FvC0OQ+xU6jzs4HB1Z82vnc92/7tbR0+2kDLMPE1NSI37vpZTV85Vg52Q36PJY4En7jqrLTakkb3AEK8Ts5qK/FNyojvkkjne6aRNSJCL9rKuj/KUMN8nGBNp6AxDgVNZlBeX0PYQe0bN6dny7k6HYW8C92UnNFCCkxybBxJAgafCn+zQIDAQAB");
+			byte[] signature = signObject(order, privateKeyConverted);
+//			System.out.println("-------- da ky va chu ky la-----------");
+//			System.out.println(Base64.getEncoder().encodeToString(signature));
+
+			boolean isSignatureValid = verifySignature(orderKhac, signature, publicKeyConverted);
+			System.out.println("so sanh chu ky dien tu");
+			System.out.println(isSignatureValid);
 		}
 
-		System.out.println("insert order");
-
-		for (Map.Entry<Integer, ProductCartResponse> productCart : cartList.entrySet()) {
-			OrderDetail orderDetail = new OrderDetail(idorder, productCart.getValue().getProduct().getIdproduct(),
-					productCart.getValue().quantity, productCart.getValue().getDetail().getSize(),
-					productCart.getValue().getProduct().getPrice(), productCart.getValue().getProduct().getDiscount(),
-					productCart.getValue().getDetail().getIsmeasure(), productCart.getValue().getDetail().getWeight(),
-					productCart.getValue().getDetail().getHeight(), productCart.getValue().getDetail().getRound1(),
-					productCart.getValue().getDetail().getRound2(), productCart.getValue().getDetail().getRound3(),
-					productCart.getValue().getDetail().getContent());
-			boolean isInsert = OrderDetailService.insertOrderDetail(orderDetail);
-			System.out.println(isInsert);
-		}
-		System.out.println("insert order detail success");
-
-		System.out.println("insert invoice");
-		Invoice invoice = new Invoice(iduser, idorder, Contants.INVOIE_STATUS_WAITING_APPROVE, Contants.INVOICE_MODE_TRUCTIEP,
-				new Timestamp(System.currentTimeMillis()), address.getContent());
-		//trong đó new Timestamp(System.currentTimeMillis() là lấy thời gian lúc mua hàng
-		boolean isInsert = InvoiceService.insertInvoice(invoice);
-		System.out.println(isInsert);
-
-		System.out.println("checkout success");
-		session.removeAttribute("productCartList");
-		response.sendRedirect("/cart/checkout-success");
+//		int idorder = OrderService.insertOrder(order);
+//		int idorder =0;
+//		System.out.println("insert order success");
+//		System.out.println(idorder);
+//		if (idorder <= 0) {
+//			System.out.println("error insert order");
+//		}
+//
+//		System.out.println("insert order");
+//
+//		for (Map.Entry<Integer, ProductCartResponse> productCart : cartList.entrySet()) {
+//			OrderDetail orderDetail = new OrderDetail(idorder, productCart.getValue().getProduct().getIdproduct(),
+//					productCart.getValue().quantity, productCart.getValue().getDetail().getSize(),
+//					productCart.getValue().getProduct().getPrice(), productCart.getValue().getProduct().getDiscount(),
+//					productCart.getValue().getDetail().getIsmeasure(), productCart.getValue().getDetail().getWeight(),
+//					productCart.getValue().getDetail().getHeight(), productCart.getValue().getDetail().getRound1(),
+//					productCart.getValue().getDetail().getRound2(), productCart.getValue().getDetail().getRound3(),
+//					productCart.getValue().getDetail().getContent());
+//			boolean isInsert = OrderDetailService.insertOrderDetail(orderDetail);
+//			System.out.println(isInsert);
+//		}
+//		System.out.println("insert order detail success");
+//
+//		System.out.println("insert invoice");
+//		Invoice invoice = new Invoice(iduser, idorder, Contants.INVOIE_STATUS_WAITING_APPROVE, Contants.INVOICE_MODE_TRUCTIEP,
+//				new Timestamp(System.currentTimeMillis()), address.getContent());
+//		//trong đó new Timestamp(System.currentTimeMillis() là lấy thời gian lúc mua hàng
+//		boolean isInsert = InvoiceService.insertInvoice(invoice);
+//		System.out.println(isInsert);
+//
+//		System.out.println("checkout success");
+//		session.removeAttribute("productCartList");
+//		response.sendRedirect("/cart/checkout-success");
 		return;
+	}
+
+	private static byte[] signObject(Order order, PrivateKey privateKey) throws Exception {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(order);
+		oos.close();
+
+		Signature signature = Signature.getInstance("SHA256withRSA");
+		signature.initSign(privateKey);
+		signature.update(baos.toByteArray());
+
+		return signature.sign();
+	}
+	private static boolean verifySignature(Order order, byte[] digitalSignature, PublicKey publicKey) throws Exception {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(order);
+		oos.close();
+
+		Signature signature = Signature.getInstance("SHA256withRSA");
+		signature.initVerify(publicKey);
+		signature.update(baos.toByteArray());
+
+		return signature.verify(digitalSignature);
+	}
+
+	private static byte[] hashData(byte[] data) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		return md.digest(data);
 	}
 }

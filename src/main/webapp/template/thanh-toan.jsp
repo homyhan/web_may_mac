@@ -196,6 +196,7 @@
                     </div>
                 </div>
                 <form id="frm_bill" action="/thanh-toan/checkout" method="POST">
+                    <input name="privateKey" placeholder="Nhập privateKey">
                     <button class="btn w-100" id="finish_order_btn" type="submit">ĐẶT
                         HÀNG</button>
                 </form>

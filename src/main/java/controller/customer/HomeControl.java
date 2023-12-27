@@ -35,24 +35,24 @@ public class HomeControl extends HttpServlet {
 
         HttpSession session = request.getSession(true);
         User info = (User) session.getAttribute("userLogin");
-        if(info!=null){
 //        if(info!=null){
-            System.out.println(info.getIduser());
-            List<Order> orderHistoryList = InvoiceService.getDataOrderHistory(info.getIduser());
-//        request.setAttribute("userAdminList", userAdminList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
-//        request.getRequestDispatcher("/quan-tri-admin/khach-hang/khach-hang.jsp").forward(request, response);
-            System.out.println("Order history");
-            System.out.println(orderHistoryList);
-            if (orderHistoryList.size()!=0){
-                System.out.println("Canh bao");
-                sendEmail(info.getEmail());
-//                session.setAttribute("emailSent", true);
-                return;
-            }else{
-                System.out.println("Khong canh bao");
-            }
-
-        }
+////        if(info!=null){
+//            System.out.println(info.getIduser());
+//            List<Order> orderHistoryList = InvoiceService.getDataOrderHistory(info.getIduser());
+////        request.setAttribute("userAdminList", userAdminList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
+////        request.getRequestDispatcher("/quan-tri-admin/khach-hang/khach-hang.jsp").forward(request, response);
+//            System.out.println("Order history");
+//            System.out.println(orderHistoryList);
+//            if (orderHistoryList.size()!=0){
+//                System.out.println("Canh bao");
+//                sendEmail(info.getEmail());
+////                session.setAttribute("emailSent", true);
+//                return;
+//            }else{
+//                System.out.println("Khong canh bao");
+//            }
+//
+//        }
 
         request.getRequestDispatcher("index.jsp").forward(request, response);
     }

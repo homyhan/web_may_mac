@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -115,26 +116,102 @@ public class UserService {
 	// https://jdbi.org/#_updates
 	// https://stackoverflow.com/questions/48361387/get-primary-keys-of-updated-rows-when-doing-an-update-with-jdbi
 	// https://jdbi.org/#_generated_keys
+//	public static int insertUser(User input) {
+//		AtomicInteger idUser = new AtomicInteger();
+//		try {
+//			// query > insert
+//			String query = "INSERT INTO user (`lastname`,`firstname`,`email`,`username`,`phone`,`password`,`role`,`status`, `publicKey`, `privateKey`) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//			int result = JDBIConnector.get().withHandle(handle -> {
+//				int id = handle.createUpdate(query).bind(0, input.getLastname()).bind(1, input.getFirstname())
+//						.bind(2, input.getEmail()).bind(3, input.getUsername()).bind(4, input.getPhone())
+//						.bind(5, input.getPassword()).bind(6, input.getRole()).bind(7, input.getStatus()).bind(8, input.getPublicKey()).bind(9, input.getPrivateKey())
+//						.executeAndReturnGeneratedKeys()
+//						.mapTo(Integer.class)
+//						.findOnly();
+//				// .execute();
+//
+//				idUser.set(id);
+//				System.out.println("------- id sout-------");
+//				System.out.println(idUser);
+//				return id;
+//			});
+//			return result;
+//		}catch (Exception e) {
+//			System.out.println(e.getMessage());
+//			return 0;
+//		}
+//		int idConverted = idUser.get();
+//		System.out.println("----------- id converted------------");
+//		System.out.println(idConverted);
+//
+//	}
 	public static int insertUser(User input) {
+		// query > insert
+		String query = "INSERT INTO user (`lastname`,`firstname`,`email`,`username`,`phone`,`password`,`role`,`status`, `publicKey`, `privateKey`) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+		int id;
 		try {
-			// query > insert
-			String query = "INSERT INTO user (`lastname`,`firstname`,`email`,`username`,`phone`,`password`,`role`,`status`) VALUES( ?, ?, ?, ?, ?, ?, ?, ?)";
-			int result = JDBIConnector.get().withHandle(handle -> {
-				int id = handle.createUpdate(query).bind(0, input.getLastname()).bind(1, input.getFirstname())
-						.bind(2, input.getEmail()).bind(3, input.getUsername()).bind(4, input.getPhone())
-						.bind(5, input.getPassword()).bind(6, input.getRole()).bind(7, input.getStatus())
+			id = JDBIConnector.get().withHandle(handle -> {
+				return handle.createUpdate(query)
+						.bind(0, input.getLastname())
+						.bind(1, input.getFirstname())
+						.bind(2, input.getEmail())
+						.bind(3, input.getUsername())
+						.bind(4, input.getPhone())
+						.bind(5, input.getPassword())
+						.bind(6, input.getRole())
+						.bind(7, input.getStatus())
+						.bind(8, input.getPublicKey())
+						.bind(9, input.getPrivateKey())
 						.executeAndReturnGeneratedKeys()
 						.mapTo(Integer.class)
 						.findOnly();
-						// .execute();
-				return id;
+			});
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			id = 0; // hoặc giá trị mặc định khác nếu cần
+		}
+
+//		String insertKeysQuery = "INSERT INTO user_keys (iduser, publicKey, privateKey) VALUES (?, ?, ?)";
+//		try {
+//			int finalId = id;
+//			int idKeyTable = JDBIConnector.get().withHandle(handle -> {
+//				return handle.createUpdate(insertKeysQuery)
+//
+//						.bind(0, finalId)
+//						.bind(1, input.getPublicKey())
+//						.bind(2, input.getPrivateKey())
+//						.executeAndReturnGeneratedKeys()
+//						.mapTo(Integer.class)
+//						.findOnly();
+//			});
+//		} catch (Exception e) {
+//			System.out.println(e.getMessage());
+//			id = 0; // hoặc giá trị mặc định khác nếu cần
+//		}
+				try {
+			// query > insert
+					String insertKeysQuery = "INSERT INTO user_keys (iduser, publicKey, privateKey) VALUES (?, ?, ?)";
+					int finalId = id;
+					int result = JDBIConnector.get().withHandle(handle -> {
+				int idKeyTable = handle.createUpdate(insertKeysQuery).bind(0, finalId).bind(1, input.getPublicKey())
+						.bind(2, input.getPrivateKey())
+						.executeAndReturnGeneratedKeys()
+						.mapTo(Integer.class)
+						.findOnly();
+				// .execute();
+
+
+				return idKeyTable;
 			});
 			return result;
 		}catch (Exception e) {
 			System.out.println(e.getMessage());
-			return 0;
+//			return 0;
 		}
+		return id;
 	}
+
 
 	public static boolean updateUserByIdUser(int userId, User user) {
 		// query > insert
