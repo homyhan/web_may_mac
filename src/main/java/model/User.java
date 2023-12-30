@@ -17,6 +17,8 @@ public class User implements Serializable {
 	private int idrole;
 	private String idfacebook;
 
+	private String publicKey;
+
 	// required default constructor
 	public User() {
 		super();
@@ -25,7 +27,7 @@ public class User implements Serializable {
 	@ConstructorProperties({ "iduser", "lastname", "firstname", "email", "username", "phone", "password", "status",
 			"role", "idrole" })
 	public User(int iduser, String lastname, String firstname, String email, String username, String phone,
-			String password, int status, int role, int idrole) {
+				String password, int status, int role, int idrole) {
 		super();
 		this.iduser = iduser;
 		this.lastname = lastname;
@@ -40,7 +42,7 @@ public class User implements Serializable {
 	}
 
 	public User(String lastname, String firstname, String email, String username, String phone, String password,
-			int status, int role) {
+				int status, int role, String publicKey) {
 		this.lastname = lastname;
 		this.firstname = firstname;
 		this.email = email;
@@ -49,6 +51,8 @@ public class User implements Serializable {
 		this.password = password;
 		this.status = status;
 		this.role = role;
+		this.publicKey = publicKey;
+
 	}
 
 	public User(String idfacebook, int role, int status) {
@@ -147,10 +151,24 @@ public class User implements Serializable {
 	}
 
 	@Override
+//	public String toString() {
+//		return "User [iduser=" + iduser + ", lastname=" + lastname + ", firstname=" + firstname + ", email=" + email
+//				+ ", username=" + username + ", phone=" + phone + ", password=" + password + ", status=" + status
+//				+ ", role=" + role + ", idrole=" + idrole + ", idfacebook=" + idfacebook + "]";
+//	}
 	public String toString() {
 		return "User [iduser=" + iduser + ", lastname=" + lastname + ", firstname=" + firstname + ", email=" + email
 				+ ", username=" + username + ", phone=" + phone + ", password=" + password + ", status=" + status
-				+ ", role=" + role + ", idrole=" + idrole + ", idfacebook=" + idfacebook + "]";
+				+ ", role=" + role + ", idrole=" + idrole + ", idfacebook=" + idfacebook + ", publicKey=" + publicKey
+				;
+	}
+
+	public String getPublicKey() {
+		return publicKey;
+	}
+
+	public void setPublicKey(String publicKey) {
+		this.publicKey = publicKey;
 	}
 
 }
