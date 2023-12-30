@@ -484,19 +484,23 @@ update product set status = 1 where idproduct > 0;
 -- Table structure for user
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user`  (
-                         `iduser` int NOT NULL AUTO_INCREMENT,
-                         `lastname` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-                         `firstname` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-                         `email` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-                         `phone` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-                         `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-                         `role` int NULL DEFAULT NULL,
-                         `username` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-                         `status` int NULL DEFAULT NULL,
-                         PRIMARY KEY (`iduser`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
+CREATE TABLE `user` (
+                        `iduser` int NOT NULL AUTO_INCREMENT,
+                        `lastname` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                        `firstname` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                        `email` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                        `phone` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                        `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                        `role` int DEFAULT NULL,
+                        `username` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                        `status` int DEFAULT NULL,
+                        `idrole` int DEFAULT NULL,
+                        `idfacebook` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+                        `publicKey` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+                        PRIMARY KEY (`iduser`) USING BTREE,
+                        KEY `fk_idrole_user` (`idrole`),
+                        CONSTRAINT `fk_idrole_user` FOREIGN KEY (`idrole`) REFERENCES `role` (`idrole`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC
 -- ----------------------------
 -- Records of user
 -- ----------------------------
