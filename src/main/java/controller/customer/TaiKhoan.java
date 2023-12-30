@@ -15,7 +15,11 @@ import service.UserService;
 
 import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.util.Base64;
 import java.util.List;
+
 
 @WebServlet(name = "TaiKhoan", value = "/tai-khoan/*")
 public class TaiKhoan extends HttpServlet {
@@ -116,7 +120,11 @@ public class TaiKhoan extends HttpServlet {
 			addAddress(request, response);
 			return;
 		case "/cap-nhat-tai-khoan":
-			updateUser(request, response);
+			try {
+				updateUser(request, response);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 			return;
 		case "/quen-mat-khau":
 			quenMatKhau(request, response);
@@ -135,6 +143,7 @@ public class TaiKhoan extends HttpServlet {
 		}
 		// request.getRequestDispatcher("template/dang-nhap.jsp").forward(request,response);
 		return;
+
 	}
 
 	protected void addAddress(HttpServletRequest request, HttpServletResponse response)
@@ -175,7 +184,7 @@ public class TaiKhoan extends HttpServlet {
 	}
 
 	protected void updateUser(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+			throws Exception {
 		request.setCharacterEncoding("utf8");// lấy dữ liệu ép kiểu về tiếng việt
 		response.setCharacterEncoding("utf8");
 		response.setContentType("text/html; charset=UTF-8");
@@ -192,6 +201,7 @@ public class TaiKhoan extends HttpServlet {
 		String username = request.getParameter("username");
 		String email = request.getParameter("email");
 		String phone = request.getParameter("phone");
+		String publicKey = request.getParameter("publicKey");
 
 		if (!username.equals(info.getUsername())) {
 			// kiểm tra username mới này có gắn với tk nào không
@@ -211,6 +221,14 @@ public class TaiKhoan extends HttpServlet {
 		System.out.println(info);
 		boolean isUpdate = UserService.updateUserByIdUser(info.getIduser(), info);// cập nhật thông tin vào db
 		System.out.println(isUpdate);
+
+		KeyPair keyPair = generateKeyPair(2048);
+		String newPublicKey = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+		boolean isKeyUpdate = UserService.updateUserPublicKeyByIdUser(info.getIduser(), newPublicKey);
+
+		// Lưu khóa vào cơ sở dữ liệu
+		System.out.println(isUpdate);
+		System.out.println(isKeyUpdate);
 
 		session.setAttribute("userLogin", info);// cập nhật thông tin trên secction //maimai
 
@@ -337,4 +355,12 @@ public class TaiKhoan extends HttpServlet {
 		response.sendRedirect("/products");// method get
 		return;
 	}
+
+	public static KeyPair generateKeyPair(int keySize) throws Exception {
+		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+		keyPairGenerator.initialize(keySize);
+		return keyPairGenerator.generateKeyPair();
+	}
+
+
 }

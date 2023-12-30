@@ -1,9 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <title>G15 | Đăng ký</title>
 
 <link rel="stylesheet" href="../themes/css1/dang-ky.css">
@@ -118,12 +116,40 @@
 								</div>
 
 								<%
-								if (request.getAttribute("error") != null) {
+									if (request.getAttribute("error") != null) {
 								%>
 								<label style="color: red"><%=request.getAttribute("error")%></label>
 								<%
-								}
+									}
 								%>
+								<!-- Thêm vào trong form -->
+								<div class="col-12">
+									<label class="form-label">Chọn cách xác thực:</label>
+									<label>
+										<input type="radio" name="authMethod" id="inputKey" onclick="showInputKey()"> Nhập key (Nếu đã có key sẵn)
+									</label>
+
+									<label>
+										<input type="radio" name="authMethod" id="generateKey" onclick="closeInputKey()"> Tạo key mới
+									</label>
+
+									<div id="keyInput">
+										<div class="hidden" id="inputPublicKey">
+											Public key: <input class="form-control" type="text" name="publicKeyReq" id="publicKey">
+										</div>
+										<div class="hidden" id="inputPrivateKey">
+											Private key: <input class="form-control" type="text" name="privateKeyReq" id="privateKey">
+										</div>
+									</div>
+
+									<!-- Trong phần head của trang JSP -->
+									<input type="hidden" name="publicKeyReq" id="hiddenPublicKey">
+									<input type="hidden" name="privateKeyReq" id="hiddenPrivateKey">
+
+
+									<!-- Thêm vào bên trong thẻ form -->
+									<input type="hidden" id="selectedFolderPath" name="selectedFolderPath" value="">
+								</div>
 
 							</div>
 
@@ -151,5 +177,71 @@
 	<!-- js -->
 
 </body>
+<script>
+	function showInputKey() {
+		document.getElementById('inputPublicKey').classList.remove('hidden');
+		document.getElementById('inputPrivateKey').classList.remove('hidden');
+		document.getElementById('inputPublicKey').querySelector('input').disabled = false;
+		document.getElementById('inputPrivateKey').querySelector('input').disabled = false;
+		document.getElementById('inputPublicKey').querySelector('input').value="";
+		document.getElementById('inputPrivateKey').querySelector('input').value="";
+	}
 
+	function closeInputKey() {
+		document.getElementById('inputPublicKey').classList.remove('hidden');
+		document.getElementById('inputPrivateKey').classList.remove('hidden');
+		document.getElementById('inputPublicKey').querySelector('input').disabled=true;
+		document.getElementById('inputPrivateKey').querySelector('input').disabled = true;
+	}
+
+	$(document).ready(function () {
+		$("input[name='authMethod']").change(function () {
+			if ($("#generateKey").prop("checked")) {
+				$.ajax({
+					type: "GET",
+					url: "/template/generateKeys",
+					dataType: "json",
+					success: function (data) {
+						$("#publicKey").val(data.publicKey);
+						$("#privateKey").val(data.privateKey);
+
+						$("hiddenPublicKey").val(data.publicKey);
+						$("hiddenPrivateKey").val(data.privateKey);
+					},
+					error: function () {
+						alert("Error generating keys");
+					}
+				});
+			}
+		});
+	});
+
+	// document.addEventListener('DOMContentLoaded', function () {
+	// 	const generateKeyRadio = document.getElementById('generateKey');
+	// 	const keyGenerationFields = document.getElementById('keyGenerationFields');
+	// 	const newPublicKeyInput = document.getElementById('newPublicKey');
+	// 	const newPrivateKeyInput = document.getElementById('newPrivateKey');
+	//
+	// 	generateKeyRadio.addEventListener('change', function () {
+	// 		if (generateKeyRadio.checked) {
+	// 			// Show key generation fields
+	// 			keyGenerationFields.style.display = 'block';
+	//
+	// 			// Generate RSA key pair
+	// 			const keyPair = forge.pki.rsa.generateKeyPair({ bits: 2048 });
+	// 			const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
+	// 			const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
+	//
+	// 			// Display the generated keys
+	// 			newPublicKeyInput.value = publicKeyPem;
+	// 			newPrivateKeyInput.value = privateKeyPem;
+	// 		} else {
+	// 			// Hide key generation fields
+	// 			keyGenerationFields.style.display = 'none';
+	// 		}
+	// 	});
+	// });
+</script>
+
+<!-- Thêm vào trong <head> -->
 </html>

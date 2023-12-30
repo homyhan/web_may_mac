@@ -19,8 +19,16 @@
       <artifactId>javax.servlet-api</artifactId>
       <version>4.0.1</version>
     </dependency>
-
-
+    <dependency>
+      <groupId>com.itextpdf</groupId>
+      <artifactId>layout</artifactId>
+      <version>8.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.itextpdf</groupId>
+      <artifactId>font-asian</artifactId>
+      <version>8.0.2</version>
+    </dependency>
     <!--    Thêm-->
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -30,7 +38,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.16</version>
+      <version>8.0.25</version>
     </dependency>
     <dependency>
       <groupId>org.jdbi</groupId>

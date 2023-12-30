@@ -30,7 +30,8 @@ public class RegisterRowMapper {
 		    		rs.getString("password"), 
 		    		rs.getInt("status"), 
 		    		rs.getInt("role"),
-		    		rs.getInt("idrole")
+		    		rs.getInt("idrole"),
+					rs.getString("publicKey")
 		    		);
 		}
 	}

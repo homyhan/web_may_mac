@@ -116,24 +116,41 @@ public class UserService {
 	// https://stackoverflow.com/questions/48361387/get-primary-keys-of-updated-rows-when-doing-an-update-with-jdbi
 	// https://jdbi.org/#_generated_keys
 	public static int insertUser(User input) {
+		int id;
 		try {
 			// query > insert
-			String query = "INSERT INTO user (`lastname`,`firstname`,`email`,`username`,`phone`,`password`,`role`,`status`) VALUES( ?, ?, ?, ?, ?, ?, ?, ?)";
-			int result = JDBIConnector.get().withHandle(handle -> {
-				int id = handle.createUpdate(query).bind(0, input.getLastname()).bind(1, input.getFirstname())
+			String query = "INSERT INTO user (`lastname`,`firstname`,`email`,`username`,`phone`,`password`,`role`,`status`, `publicKey`) VALUES( ?, ?, ?, ?, ?, ?, ?, ?)";
+			id = JDBIConnector.get().withHandle(handle -> {
+				return handle.createUpdate(query).bind(0, input.getLastname()).bind(1, input.getFirstname())
 						.bind(2, input.getEmail()).bind(3, input.getUsername()).bind(4, input.getPhone())
 						.bind(5, input.getPassword()).bind(6, input.getRole()).bind(7, input.getStatus())
+						.bind(8, input.getPublicKey())
 						.executeAndReturnGeneratedKeys()
 						.mapTo(Integer.class)
 						.findOnly();
 						// .execute();
-				return id;
 			});
-			return result;
 		}catch (Exception e) {
 			System.out.println(e.getMessage());
-			return 0;
+			id = 0;
 		}
+		try {
+			String insertKeysQuery = "INSERT INTO user_keys (iduser, publicKey) VALUES (?, ?)";
+			int finalId = id;
+			int result = JDBIConnector.get().withHandle(handle -> {
+				int idKeyTable = handle.createUpdate(insertKeysQuery).bind(0, finalId).bind(1, input.getPublicKey())
+
+						.executeAndReturnGeneratedKeys()
+						.mapTo(Integer.class)
+						.findOnly();
+				// .execute();
+				return idKeyTable;
+			});
+			return result;
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return id;
 	}
 
 	public static boolean updateUserByIdUser(int userId, User user) {
@@ -165,6 +182,17 @@ public class UserService {
 			return true;
 		}
 		return false;
+	}
+
+	public static boolean updateUserPublicKeyByIdUser(int iduser, String newPublicKey) {
+		String query = "update user set publicKey=? where iduser = ? and status = 1";
+		int result = JDBIConnector.get().withHandle(handle ->
+				handle.createUpdate(query)
+						.bind(0, newPublicKey)
+						.bind(1, iduser)
+						.execute());
+
+		return result == 1;
 	}
 
 	// gửi phản hồi cho đăng ký nhận thông báo ở footer

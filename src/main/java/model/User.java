@@ -17,6 +17,9 @@ public class User implements Serializable {
 	private int idrole;
 	private String idfacebook;
 
+	private String publicKey;
+
+
 	// required default constructor
 	public User() {
 		super();
@@ -40,7 +43,7 @@ public class User implements Serializable {
 	}
 
 	public User(String lastname, String firstname, String email, String username, String phone, String password,
-			int status, int role) {
+			int status, int role, String publicKey) {
 		this.lastname = lastname;
 		this.firstname = firstname;
 		this.email = email;
@@ -49,6 +52,7 @@ public class User implements Serializable {
 		this.password = password;
 		this.status = status;
 		this.role = role;
+		this.publicKey = publicKey;
 	}
 
 	public User(String idfacebook, int role, int status) {
@@ -56,6 +60,9 @@ public class User implements Serializable {
 		this.status = status;
 		this.role = role;
 		this.idfacebook = idfacebook;
+	}
+
+	public User(int iduser, String lastname, String firstname, String email, String username, String phone, String password, int status, int role, int idrole, String publicKey) {
 	}
 
 	public int getIduser() {
@@ -144,6 +151,14 @@ public class User implements Serializable {
 
 	public void setIdfacebook(String idfacebook) {
 		this.idfacebook = idfacebook;
+	}
+
+	public String getPublicKey() {
+		return publicKey;
+	}
+
+	public void setPublicKey(String publicKey) {
+		this.publicKey = publicKey;
 	}
 
 	@Override
