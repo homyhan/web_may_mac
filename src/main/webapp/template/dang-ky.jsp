@@ -7,7 +7,11 @@
 <title>G15 | Đăng ký</title>
 
 <link rel="stylesheet" href="../themes/css1/dang-ky.css">
-
+	<style>
+		.hidden {
+			display: none;
+		}
+	</style>
 </head>
 
 <body>
@@ -127,6 +131,35 @@
 
 							</div>
 
+							<%--							FORM KEY --%>
+
+							<label>
+								<input type="radio" name="keyStatus" id="hasKey" onclick="showKeyInputs()"> Có key
+							</label>
+
+							<label>
+								<input type="radio" name="keyStatus" id="noKey" onclick="disableKeyInputs()"> Chưa có key
+							</label>
+
+							<div id="keyInputs">
+								<div class="hidden" id="keyInput1">
+									Public key: <input class="form-control" type="text" name="publicKeyReq" id="publicKey">
+								</div>
+								<div class="hidden" id="keyInput2">
+									Private key: <input class="form-control" type="text" name="privateKeyReq" id="privateKey">
+								</div>
+							</div>
+
+							<!-- Trong phần head của trang JSP -->
+							<input type="hidden" name="publicKeyReq" id="hiddenPublicKey">
+							<input type="hidden" name="privateKeyReq" id="hiddenPrivateKey">
+
+
+							<!-- Thêm vào bên trong thẻ form -->R
+							<input type="hidden" id="selectedFolderPath" name="selectedFolderPath" value="">
+
+							<%--							END --%>
+
 							<hr>
 
 							<button id="regis_btn" class="btn btn-dark" type="submit">
@@ -149,6 +182,56 @@
 	<%@ include file="footer.jsp"%>
 
 	<!-- js -->
+
+
+	<%--	START KEY --%>
+	<script>
+		function showKeyInputs() {
+			document.getElementById('keyInput1').classList.remove('hidden');
+			document.getElementById('keyInput2').classList.remove('hidden');
+			document.getElementById('keyInput1').querySelector('input').disabled =false;
+			document.getElementById('keyInput2').querySelector('input').disabled =false;
+			document.getElementById('keyInput1').querySelector('input').value="";
+			document.getElementById('keyInput2').querySelector('input').value="";
+		}
+
+		function disableKeyInputs() {
+			document.getElementById('keyInput1').classList.remove('hidden');
+			document.getElementById('keyInput2').classList.remove('hidden');
+			document.getElementById('keyInput1').querySelector('input').disabled =true;
+			document.getElementById('keyInput2').querySelector('input').disabled =true;
+		}
+	</script>
+
+	<!-- Add this at the end of your JSP file, before </body> -->
+	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$("input[name='keyStatus']").change(function () {
+				if ($("#noKey").prop("checked")) {
+					// Make an AJAX request to the server-side endpoint
+					$.ajax({
+						type: "GET",
+						url: "/template/generateKeys",// Update the URL to match your server-side endpoint
+						dataType: "json",
+						success: function (data) {
+							// Update the input fields with the generated keys
+							$("#publicKey").val(data.publicKey);
+							$("#privateKey").val(data.privateKey);
+
+							$("#hiddenPublicKey").val(data.publicKey);
+							$("#hiddenPrivateKey").val(data.privateKey);
+						},
+						error: function () {
+							alert("Error generating keys");
+						}
+					});
+				}
+			});
+		});
+	</script>
+	<%--END KEY--%>
+
 
 </body>
 

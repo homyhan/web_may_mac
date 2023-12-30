@@ -814,6 +814,18 @@ INSERT INTO `voucher_users` VALUES (2, 2, 1, 1);
 INSERT INTO `voucher_users` VALUES (3, 2, 1, 1);
 
 
+-- THEM TRUONG PUBLIC KEY VAO TABLE USER
+ALTER TABLE `user`
+    ADD COLUMN `publickey` VARCHAR(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL;
+select * from user;
+-- BANG KEY
+CREATE TABLE `user_keys` (
+                             `iduser` INT NOT NULL,
+                             `publicKey` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+                             PRIMARY KEY (`iduser`),
+                             FOREIGN KEY (`iduser`) REFERENCES `user`(`iduser`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 
 
 
