@@ -195,8 +195,12 @@
 							</span> VND
                     </div>
                 </div>
+                <a href="template/leak-private-key.jsp" >
+                    <button class="btn w-100" >Lộ private key</button>
+                </a>
                 <form id="frm_bill" action="/thanh-toan/checkout" method="POST">
                     <input name="privateKey" placeholder="Nhập privateKey">
+
                     <button class="btn w-100" id="finish_order_btn" type="submit">ĐẶT
                         HÀNG</button>
                 </form>

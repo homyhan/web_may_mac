@@ -79,8 +79,15 @@ public class ThanhToan extends HttpServlet {
 				throw new RuntimeException(e);
 			}
 			break;
+		case "/leakPrivateKey":
+			try {
+				leakPrivateKey(request, response);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			break;
 
-		default:
+			default:
 			System.out.println(action);
 			RequestDispatcher requestDispatcher = request.getRequestDispatcher("/template/gio-hang2.jsp");
 			requestDispatcher.forward(request, response);
@@ -204,6 +211,12 @@ public class ThanhToan extends HttpServlet {
 		return;
 	}
 
+	private  void leakPrivateKey(HttpServletRequest request, HttpServletResponse response)
+			throws Exception{
+		System.out.println("handle leak");
+		request.setAttribute("listMyVoucher", "nguyen trung hieu");
+		request.getRequestDispatcher("/template/leak-private-key.jsp").forward(request, response);
+	}
 	private static byte[] signObject(Order order, PrivateKey privateKey) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
