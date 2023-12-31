@@ -827,6 +827,36 @@ CREATE TABLE `user_keys` (
 ) ENGINE = InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
+-- THEM TRUONG SIGNATURE CHO TABLE ORDER
+ALTER TABLE orders
+ADD COLUMN signature TEXT;
 
+-- chinh sua bang order de phu hop gia tri voi java
+ALTER TABLE orders MODIFY COLUMN grandtotal DECIMAL(10, 2);
+
+-- Đổi tên trường từ idorders thành idorder
+ALTER TABLE `orders`
+CHANGE COLUMN `idorders` `idorder` INT(11) NOT NULL AUTO_INCREMENT;
+
+-- Cập nhật tên khóa chính
+ALTER TABLE `orders`
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (`idorder`);
+
+-- Cập nhật tên các khóa ngoại có liên quan
+ALTER TABLE `orders`
+DROP FOREIGN KEY `fk_couponsidorders`,
+DROP FOREIGN KEY `fk_useridorders`,
+DROP FOREIGN KEY `fk_addressidorders`;
+
+-- Cập nhật tên các khóa ngoại sau khi thay đổi tên trường
+ALTER TABLE `orders`
+ADD CONSTRAINT `fk_couponsidorder` FOREIGN KEY (`idcoupons`) REFERENCES `coupons` (`idcoupons`) ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_useridorder` FOREIGN KEY (`iduser`) REFERENCES `user` (`iduser`) ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_addressidorder` FOREIGN KEY (`idaddress`) REFERENCES `address` (`idaddress`) ON UPDATE CASCADE;
+
+-- doi kdl cho createat để đồng nhất
+ALTER TABLE `invoice`
+MODIFY COLUMN `createAt` timestamp(3) NOT NULL DEFAULT current_timestamp(3);
 
 
