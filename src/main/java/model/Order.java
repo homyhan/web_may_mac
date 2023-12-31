@@ -16,12 +16,30 @@ public class Order implements Serializable {
     private int status;
     private String content;
 
+    private String signature;
+
     public Order() {
-    	
+
+    }
+
+    public Order(int idorder, int iduser, int idaddress, float subtotal, float itemdiscount, float shipping,    int idcoupons, float grandtotal
+            , int status, String content) {
+//        super();
+        this.idorder = idorder;
+        this.iduser = iduser;
+        this.idaddress = idaddress;
+        this.subtotal = subtotal;
+        this.itemdiscount = itemdiscount;
+        this.shipping = shipping;
+        this.idcoupons = idcoupons;
+        this.grandtotal = grandtotal;
+        this.status = status;
+        this.content = content;
+//        this.signature = signature;
     }
 
     public Order(int iduser, int idaddress, float subtotal, float itemdiscount, float shipping,    int idcoupons, float grandtotal
-        , int status, String content) {
+            , int status, String content) {
 
         this.iduser = iduser;
         this.idaddress = idaddress;
@@ -32,6 +50,21 @@ public class Order implements Serializable {
         this.grandtotal = grandtotal;
         this.status = status;
         this.content = content;
+    }
+
+    public Order(int iduser, int idaddress, float subtotal, float itemdiscount, float shipping,    int idcoupons, float grandtotal
+            , int status, String content, String signature) {
+
+        this.iduser = iduser;
+        this.idaddress = idaddress;
+        this.subtotal = subtotal;
+        this.itemdiscount = itemdiscount;
+        this.shipping = shipping;
+        this.idcoupons = idcoupons;
+        this.grandtotal = grandtotal;
+        this.status = status;
+        this.content = content;
+        this.signature = signature;
     }
 
     public int getIduser() {
@@ -115,6 +148,21 @@ public class Order implements Serializable {
     }
 
     @Override
+//    public String toString() {
+//        return "Order{" +
+//                "idorder=" + idorder +
+//                ", iduser=" + iduser +
+//                ", idaddress=" + idaddress +
+//                ", subtotal=" + subtotal +
+//                ", itemdiscount=" + itemdiscount +
+//                ", shipping=" + shipping +
+//                ", grandtotal=" + grandtotal +
+//                ", idcoupons=" + idcoupons +
+//                ", status=" + status +
+//                ", content='" + content + '\'' +
+//                '}';
+//    }
+
     public String toString() {
         return "Order{" +
                 "idorder=" + idorder +
@@ -126,19 +174,28 @@ public class Order implements Serializable {
                 ", grandtotal=" + grandtotal +
                 ", idcoupons=" + idcoupons +
                 ", status=" + status +
-                ", content='" + content + '\'' +
+                ", content='" + content +
+                ", signature='" + signature + '\'' +
                 '}';
     }
 
     public void put(Product product){
-        
+
     }
 
     public void remove(int id) {
-    	
+
     }
     public void update(int id, int quantity) {
-    	
+
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
     }
 
 }

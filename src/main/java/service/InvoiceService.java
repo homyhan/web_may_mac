@@ -6,13 +6,15 @@ import model.Invoice;
 import model.Order;
 import response.InvoiceResponse;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class InvoiceService {
 	public static List<Invoice> getData() {
-		
+
 		return JDBIConnector.get().withHandle(handle -> {
 			return handle.createQuery("select * from invoice").mapToBean(Invoice.class).stream()
 					.collect(Collectors.toList());
@@ -26,10 +28,12 @@ public class InvoiceService {
 
 	public static boolean insertInvoice(Invoice input) {
 		// query > insert
+		Timestamp timestamp = new Timestamp(input.getCreateAt().getTime());
+
 		String query = "INSERT INTO invoice( `idusers`, `idorder`, `status`, `mode`,`createAt`,`content`) VALUES ( ?, ?, ?, ?, ?, ?)";
 		int result = JDBIConnector.get().withHandle(handle -> {
 			int count = handle.createUpdate(query).bind(0, input.getIduser()).bind(1, input.getIdorder())
-					.bind(2, input.getStatus()).bind(3, input.getMode()).bind(4, input.getCreateAt())
+					.bind(2, input.getStatus()).bind(3, input.getMode()).bind(4, timestamp)
 					.bind(5, input.getContent()).execute();
 			return count;
 		});
@@ -38,7 +42,7 @@ public class InvoiceService {
 		}
 		return false;
 	}
-	
+
 	public static boolean updateInvoiceStatus(int invoiceId, int status) {
 		// query > insert
 		String query = "update invoice set status = ? where idinvoice = ?";
@@ -60,7 +64,14 @@ public class InvoiceService {
 		});
 		return getListInvoiceResp(datas);
 	}
-	
+
+	//LAY DS HOA DON (TAI KHOAN - DON HANG CUA USER) BOI ID DON HANG
+	public static List<Invoice> getDataInvoiceByIdOrder(int idOrder) {
+		return JDBIConnector.get().withHandle(handle -> {
+			return handle.createQuery("select * from invoice where idorder= ?").bind(0, idOrder).mapToBean(Invoice.class).stream().collect(Collectors.toList());
+		});
+	}
+
 	public static List<InvoiceResponse> getListInvoice4Admin() {
 		String query = "select * from invoice order by createAt desc";
 		List<Invoice> datas = JDBIConnector.get().withHandle(handle -> {
@@ -69,30 +80,30 @@ public class InvoiceService {
 		});
 		return getListInvoiceResp(datas);
 	}
-	
+
 	public static List<InvoiceResponse> getListInvoiceResp(List<Invoice> datas) {
 		List<InvoiceResponse> result = new ArrayList<InvoiceResponse>();
 		for (Invoice invoice : datas) {
 			Order order = OrderService.getDetailByOrderId(invoice.getIdorder());
 			String status = "Không xác định";
 			switch (invoice.getStatus()) {
-			case Contants.INVOIE_STATUS_APPROVE:
-				status = "Đã xác nhận";
-				break;
-			case Contants.INVOIE_STATUS_CANCEL:
-				status = "Đã hủy";
-				break;
-			case Contants.INVOIE_STATUS_DELIVERY:
-				status = "Đang giao hàng";
-				break;
-			case Contants.INVOIE_STATUS_SUCCESS:
-				status = "Hoàn thành";
-				break;
-			case Contants.INVOIE_STATUS_WAITING_APPROVE:
-				status = "Chờ xác nhận";
-				break;
-			default:
-				break;
+				case Contants.INVOIE_STATUS_APPROVE:
+					status = "Đã xác nhận";
+					break;
+				case Contants.INVOIE_STATUS_CANCEL:
+					status = "Đã hủy";
+					break;
+				case Contants.INVOIE_STATUS_DELIVERY:
+					status = "Đang giao hàng";
+					break;
+				case Contants.INVOIE_STATUS_SUCCESS:
+					status = "Hoàn thành";
+					break;
+				case Contants.INVOIE_STATUS_WAITING_APPROVE:
+					status = "Chờ xác nhận";
+					break;
+				default:
+					break;
 			}
 			result.add(new InvoiceResponse(invoice, order, status));// tạo lớp chứa thông tin invoice và order
 		}

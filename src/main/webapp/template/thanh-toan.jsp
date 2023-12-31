@@ -195,10 +195,23 @@
 							</span> VND
                     </div>
                 </div>
+<%--                START FORM PRIVATEKEY--%>
                 <form id="frm_bill" action="/thanh-toan/checkout" method="POST">
+                    <%--                    <input name="privateKey" placeholder="Nhập privateKey">--%>
+                    <input type="text" class="form-control"  placeholder="Nhập privatekey" name="privateKey" required>
+
+                    <% String error = request.getParameter("errorPrivateKey"); %>
+                    <% if (error != null) { %>
+                    <br>
+                    <div class="alert alert-danger" role="alert">
+                        Privatekey không trùng khớp
+                    </div>
+                    <% } %>
+
                     <button class="btn w-100" id="finish_order_btn" type="submit">ĐẶT
                         HÀNG</button>
                 </form>
+<%--                END FORM PRIVATEKEY--%>
                 <%} %>
             </div>
         </div>

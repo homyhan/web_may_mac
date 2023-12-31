@@ -1,10 +1,12 @@
 package controller.customer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -19,11 +21,14 @@ import DAO.impl.VoucherDaO;
 import controller.OrderFeeController;
 import helper.Contants;
 import model.*;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import response.ProductCartResponse;
 import service.AddressService;
 import service.InvoiceService;
 import service.OrderDetailService;
 import service.OrderService;
+import ultilities.Log4j;
+import ultilities.Message;
 
 @WebServlet(name = "ThanhToan", value = "/thanh-toan/*")
 public class ThanhToan extends HttpServlet {
@@ -67,21 +72,27 @@ public class ThanhToan extends HttpServlet {
 
 		switch (action) {
 
-		case "/checkout":
-			checkout(request, response);
-			break;
+			case "/checkout":
+				try {
+					checkout(request, response);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+				break;
 
-		default:
-			System.out.println(action);
-			RequestDispatcher requestDispatcher = request.getRequestDispatcher("/template/gio-hang2.jsp");
-			requestDispatcher.forward(request, response);
-			break;
+			default:
+				System.out.println(action);
+				RequestDispatcher requestDispatcher = request.getRequestDispatcher("/template/gio-hang2.jsp");
+				requestDispatcher.forward(request, response);
+				break;
 		}
 		return;
 	}
 
+//	START CMT
+
 	private void checkout(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+			throws Exception {
 		System.out.println("check out");
 		HttpSession session = request.getSession(true);
 		if (session.getAttribute("productCartList") == null) {
@@ -98,6 +109,7 @@ public class ThanhToan extends HttpServlet {
 			response.sendRedirect("/tai-khoan/update-address");
 			return;
 		}
+
 		// login thành công đã có user
 		User info = (User) session.getAttribute("userLogin");
 		Address address = (Address) session.getAttribute("addressDefault");
@@ -136,16 +148,65 @@ public class ThanhToan extends HttpServlet {
 			idcoupons = coupons.getIdcoupons();
 		}
 
-		Order order = new Order(iduser, idaddress, subtotal, itemdiscount, shipping, idcoupons, grandtotal, 0, "");
-		int idorder = OrderService.insertOrder(order);
-		System.out.println("insert order success");
-		System.out.println(idorder);
-		if (idorder <= 0) {
-			System.out.println("error insert order");
+//		// TẠO CHỮ KÝ SỐ
+		String privateKey = request.getParameter("privateKey");
+		String publicKey = (String) session.getAttribute("publicKeySession");
+		PrivateKey privateKeyConverted;
+		PublicKey publicKeyConverted;
+		System.out.println(publicKey);
+		System.out.println(privateKey);
+
+		try {
+			PublicKey pbKey = convertStringToPublicKey(publicKey);
+			PrivateKey prKey = convertStringToPrivateKey(privateKey);
+			if(!checkKeyPair(pbKey, prKey)){
+				System.out.println("Khong phai la 1 cap key");
+			}else {
+				System.out.println("La mot cap key");
+
+			}
+
+		} catch (Exception e) {
+//                throw new RuntimeException(e);
+			System.out.println("Khong phai la cap key - duoc xu ly trong try catch");
+			request.getSession().setAttribute("errorPrivateKey", "Private Key không trùng khớp");
+			response.sendRedirect("/thanh-toan?errorPrivateKey=0");
+
+			return;
 		}
 
-		System.out.println("insert order");
 
+		if(privateKey.trim().isEmpty() || privateKey==null){
+			System.out.println("Nhap privatekey");
+			request.setAttribute("errorPrivateKey", "Private Key cannot be empty.");
+			return;
+		}
+		else{
+			RSA rsa = new RSA();
+			privateKeyConverted = rsa.getPrivateKeyFromString(privateKey);
+			publicKeyConverted = rsa.getPublicKeyFromString(publicKey);
+
+		}
+
+		Order order = new Order(iduser, idaddress, subtotal, itemdiscount, shipping, idcoupons, grandtotal, 0, "");
+		Order orderKhac = new Order(40, 11111, 100.0f, itemdiscount, shipping, idcoupons, grandtotal, 0, "");
+		byte[] data = toByteArray(order);
+		String hash1 = hashData2412(data);
+		System.out.println("Obj thanh toan: "+order);
+		System.out.println("Hash 1: " + hash1);
+
+
+//		TEST START 2812
+
+		byte[] byteOrder = toByteArray(order);
+
+		List<OrderDetail> dsOrderDetail = new ArrayList<>();
+
+		byte[] rsArrOrderDetail = new byte[0];
+
+		OrderDetail orDetail;
+
+		int idorder = OrderService.insertOrder(order);
 		for (Map.Entry<Integer, ProductCartResponse> productCart : cartList.entrySet()) {
 			OrderDetail orderDetail = new OrderDetail(idorder, productCart.getValue().getProduct().getIdproduct(),
 					productCart.getValue().quantity, productCart.getValue().getDetail().getSize(),
@@ -155,20 +216,232 @@ public class ThanhToan extends HttpServlet {
 					productCart.getValue().getDetail().getRound2(), productCart.getValue().getDetail().getRound3(),
 					productCart.getValue().getDetail().getContent());
 			boolean isInsert = OrderDetailService.insertOrderDetail(orderDetail);
-			System.out.println(isInsert);
-		}
-		System.out.println("insert order detail success");
+			orDetail=new OrderDetail(idorder, productCart.getValue().getProduct().getIdproduct(),
+					productCart.getValue().quantity, productCart.getValue().getDetail().getSize(),
+					productCart.getValue().getProduct().getPrice(), productCart.getValue().getProduct().getDiscount(),
+					productCart.getValue().getDetail().getIsmeasure(), productCart.getValue().getDetail().getWeight(),
+					productCart.getValue().getDetail().getHeight(), productCart.getValue().getDetail().getRound1(),
+					productCart.getValue().getDetail().getRound2(), productCart.getValue().getDetail().getRound3(),
+					productCart.getValue().getDetail().getContent());
 
-		System.out.println("insert invoice");
+			dsOrderDetail.add(orderDetail);
+		}
+
+		for (OrderDetail o: dsOrderDetail){
+			byte[] odToArrayByte = toByteArray(o);
+			// Tạo mảng mới có kích thước là tổng kích thước của mảng cũ và mảng mới
+			byte[] newArray = new byte[rsArrOrderDetail.length + odToArrayByte.length];
+
+			// Sao chép dữ liệu từ mảng cũ và mảng mới vào mảng mới
+			System.arraycopy(rsArrOrderDetail, 0, newArray, 0, rsArrOrderDetail.length);
+			System.arraycopy(odToArrayByte, 0, newArray, rsArrOrderDetail.length, odToArrayByte.length);
+
+			// Gán mảng mới cho mảng lớn
+			rsArrOrderDetail = newArray;
+
+		}
+
 		Invoice invoice = new Invoice(iduser, idorder, Contants.INVOIE_STATUS_WAITING_APPROVE, Contants.INVOICE_MODE_TRUCTIEP,
 				new Timestamp(System.currentTimeMillis()), address.getContent());
-		//trong đó new Timestamp(System.currentTimeMillis() là lấy thời gian lúc mua hàng
 		boolean isInsert = InvoiceService.insertInvoice(invoice);
-		System.out.println(isInsert);
+		byte[] byteInvoice = toByteArray(invoice);
 
-		System.out.println("checkout success");
+		// gộp
+		byte[] rsConcate = concatenateByteArrays(byteOrder, rsArrOrderDetail, byteInvoice);
+		byte[] hashConcate = hashData(rsConcate);
+		byte[] signature = signHashOrder(hashConcate, privateKeyConverted);
+		byte[] okSignature = Arrays.copyOfRange(signature, 0, 256);
+
+
+		System.out.println("--------- Start Signature : ");
+		System.out.println(Base64.getEncoder().encodeToString(okSignature));
+		System.out.println("-------- End Signature ");
+		System.out.println("order: "+order);
+		System.out.println("Invoice: "+invoice);
+		System.out.println(" co lenh update order");
+
+		int updatedOrder = OrderService.updateSignatureForOrder(idorder, Base64.getEncoder().encodeToString(okSignature));
+		System.out.println(updatedOrder);
+
+		System.out.println("In thanh toan");
+		System.out.println(order);
+		System.out.println(dsOrderDetail);
+		System.out.println(invoice);
+		System.out.println("In mang byte order: ");
+		System.out.println(hashData2412(byteOrder));
+
+		System.out.println("In mang byte order detail: ");
+		System.out.println(hashData2412(rsArrOrderDetail));
+
+		System.out.println("In mang byte invoice: ");
+		System.out.println(hashData2412(byteInvoice));
+
+		System.out.println("In mang byte da gop 3 mang: ");
+		System.out.println(hashData2412(rsConcate));
+
+		System.out.println("In mang chua Hash mang to: ");
+		System.out.println(hashData2412(hashConcate));
+
+
 		session.removeAttribute("productCartList");
 		response.sendRedirect("/cart/checkout-success");
-		return;
+
+//		END TEST 2812
+
+//
+//		byte[] orderBytes = toByteArray2(order);
+//
+//		byte[] hashResult = hashData(orderBytes);
+//
+//		byte[] signature = signHashOrder(hashResult, privateKeyConverted);
+//
+//		byte[] fixedSizeSignature = Arrays.copyOfRange(signature, 0, 256);
+//
+//		Order orderSigned = new Order(iduser, idaddress, subtotal, itemdiscount, shipping, idcoupons, grandtotal, 0, "", Base64.getEncoder().encodeToString(fixedSizeSignature));
+
+
+		//THEM VAO DB OK K XÓA
+
+		// END OK K XÓA
 	}
+
+
+	//END CMT
+
+
+
+	private static byte[] signHashOrder(byte[] hashedData, PrivateKey privateKey) throws Exception {
+
+		Signature signature = Signature.getInstance("SHA256withRSA");
+		signature.initSign(privateKey);
+		signature.update(hashedData);
+
+		return signature.sign();
+	}
+
+
+	private static byte[] hashData(byte[] data) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		return md.digest(data);
+	}
+
+	private static boolean checkKeyPair(PublicKey publicKey, PrivateKey privateKey) {
+		try {
+			// Tạo một đối tượng Signature với thuật toán SHA256withRSA
+			Signature signature = Signature.getInstance("SHA256withRSA");
+
+			// Ký một mảng byte bằng private key
+			signature.initSign(privateKey);
+			byte[] message = "Hello, World!".getBytes();
+			signature.update(message);
+			byte[] signedData = signature.sign();
+
+			// Xác minh chữ ký bằng public key
+			signature.initVerify(publicKey);
+			signature.update(message);
+
+			// Nếu xác minh thành công, chứng tỏ public key và private key là một cặp hợp lệ
+			return signature.verify(signedData);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private static PublicKey convertStringToPublicKey(String str) throws Exception {
+		RSA rsa = new RSA();
+		PublicKey pbKey = rsa.getPublicKeyFromString(str);
+		return pbKey;
+	}
+	private static PrivateKey convertStringToPrivateKey(String str) throws Exception {
+		RSA rsa = new RSA();
+		PrivateKey privateKey = rsa.getPrivateKeyFromString(str);
+		return privateKey;
+	}
+
+	public static byte[] toByteArray(Order or) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(or);
+			oos.close();
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+
+	public static byte[] toByteArray2(Order order) {
+		try {
+			// Sắp xếp các thuộc tính của đối tượng trước khi serialization
+//			Arrays.sort(order.getProperties()); // Giả sử bạn có một phương thức getProperties trả về mảng chứa các thuộc tính cần sắp xếp
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(order);
+			oos.close();
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public static byte[] toByteArray(Object object) {
+		try {
+			// Sắp xếp các thuộc tính của đối tượng trước khi serialization
+//			Arrays.sort(order.getProperties()); // Giả sử bạn có một phương thức getProperties trả về mảng chứa các thuộc tính cần sắp xếp
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(object);
+			oos.close();
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+
+
+	private static String hashData2412(byte[] data) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(data);
+			return bytesToHex2412(hash);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private static String bytesToHex2412(byte[] bytes) {
+		StringBuilder result = new StringBuilder();
+		for (byte b : bytes) {
+			result.append(String.format("%02X", b));
+		}
+		return result.toString();
+	}
+
+
+	public static byte[] concatenateByteArrays(byte[] order, byte[] orderdetail, byte[] invoice) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+			baos.write(order);
+			baos.write(orderdetail);
+			baos.write(invoice);
+
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 }
