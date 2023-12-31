@@ -25,10 +25,7 @@ import helper.Contants;
 import model.*;
 import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import response.ProductCartResponse;
-import service.AddressService;
-import service.InvoiceService;
-import service.OrderDetailService;
-import service.OrderService;
+import service.*;
 
 @WebServlet(name = "ThanhToan", value = "/thanh-toan/*")
 public class ThanhToan extends HttpServlet {
@@ -213,9 +210,29 @@ public class ThanhToan extends HttpServlet {
 
 	private  void leakPrivateKey(HttpServletRequest request, HttpServletResponse response)
 			throws Exception{
-		System.out.println("handle leak");
-		request.setAttribute("listMyVoucher", "nguyen trung hieu");
-		request.getRequestDispatcher("/template/leak-private-key.jsp").forward(request, response);
+		HttpSession session = request.getSession(true);
+		User info = (User) session.getAttribute("userLogin");
+
+		String startAt = request.getParameter("startAt");
+		// handle delete order before startAt
+		InvoiceService.deleteInvoiceBeforeStartAt(info.getIduser(), startAt);
+
+		// handle create new public-key, private-key
+		RSA rsa = new RSA();
+		rsa.genKey();
+		info.setPublicKey(Base64.getEncoder().encodeToString(rsa.getPublicKey().getEncoded()));
+
+		String newPrivateKey = Base64.getEncoder().encodeToString(rsa.getPrivateKey().getEncoded());
+		info.setPrivateKey(newPrivateKey);
+		// update info user
+		Boolean isUpdate = UserService.updateKeyById(info.getIduser(),info);
+		System.out.println(isUpdate);
+		session.setAttribute("userLogin", info);
+
+		System.out.println(info);
+		// Gửi giá trị voucherPrice về phản hồi
+		response.setContentType("text/plain");
+		response.getWriter().write(String.valueOf(newPrivateKey));
 	}
 	private static byte[] signObject(Order order, PrivateKey privateKey) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

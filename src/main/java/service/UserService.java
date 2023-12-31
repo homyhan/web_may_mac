@@ -228,6 +228,21 @@ public class UserService {
 		return false;
 	}
 
+	public static boolean updateKeyById(int userId, User user){
+		// query > insert
+		String query = "update user set privateKey=?, publicKey=? where iduser = ? and status = 1";
+		int result = JDBIConnector.get().withHandle(handle -> {
+			int count = handle.createUpdate(query).bind(0, user.getPrivateKey()).bind(1, user.getPublicKey())
+					.bind(2, userId)
+					.execute();
+			return count;
+		});
+		if (result == 1) {
+			return true;
+		}
+		return false;
+	}
+
 	public static boolean updatePassByIdUser(int iduser, User user) {
 		System.out.println(iduser);
 		System.out.println(user.getPassword());

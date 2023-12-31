@@ -7,6 +7,7 @@ import model.Order;
 import response.InvoiceResponse;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,14 @@ public class InvoiceService {
 			return true;
 		}
 		return false;
+	}
+
+	public static boolean deleteInvoiceBeforeStartAt(int userId, String startAt){
+		String query = "update invoice set status = 0 where idusers = ? AND createAt > ?";
+		int result = JDBIConnector.get().withHandle(handle -> {
+			return handle.createUpdate(query).bind(0, userId).bind(1, startAt).execute();
+		});
+		return true;
 	}
 
 	public static List<InvoiceResponse> getListInvoiceByUserId(int iduser) {
