@@ -43,7 +43,7 @@ public class UserService {
 			return null;
 		return users.get(0);
 	}
-	
+
 	public static User getUserByUserNameAndPassword(String username, String password) {
 		List<User> users = JDBIConnector.get()
 				.withHandle(h -> h.createQuery("select * from user where username = ? and password = ? and status = 1")
@@ -115,6 +115,27 @@ public class UserService {
 	// https://jdbi.org/#_updates
 	// https://stackoverflow.com/questions/48361387/get-primary-keys-of-updated-rows-when-doing-an-update-with-jdbi
 	// https://jdbi.org/#_generated_keys
+//	public static int insertUser(User input) {
+//		try {
+//			// query > insert
+//			String query = "INSERT INTO user (`lastname`,`firstname`,`email`,`username`,`phone`,`password`,`role`,`status`) VALUES( ?, ?, ?, ?, ?, ?, ?, ?)";
+//			int result = JDBIConnector.get().withHandle(handle -> {
+//				int id = handle.createUpdate(query).bind(0, input.getLastname()).bind(1, input.getFirstname())
+//						.bind(2, input.getEmail()).bind(3, input.getUsername()).bind(4, input.getPhone())
+//						.bind(5, input.getPassword()).bind(6, input.getRole()).bind(7, input.getStatus())
+//						.executeAndReturnGeneratedKeys()
+//						.mapTo(Integer.class)
+//						.findOnly();
+//						// .execute();
+//				return id;
+//			});
+//			return result;
+//		}catch (Exception e) {
+//			System.out.println(e.getMessage());
+//			return 0;
+//		}
+//	}
+
 	public static int insertUser(User input) {
 		// query > insert
 		String query = "INSERT INTO user (`lastname`,`firstname`,`email`,`username`,`phone`,`password`,`role`,`status`, `publicKey`) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -273,27 +294,27 @@ public class UserService {
 		return false;
 	}
 
-    public  User getDetailUserByIdUser(int iduser) {
-    	System.out.println(iduser);
-        String query = "select * FROM user where iduser=?";
-        List<User> datas = JDBIConnector.get().withHandle(handle -> {
-            return handle.createQuery(query)
-                    .bind(0, iduser)
-                    .mapToBean(User.class).stream().collect(Collectors.toList());
-        });
-        if (datas.size() > 0) {
-            return datas.get(0);// lấy duy nhất 1 sản phẩm
-        }
-        return null;
-    }
-	
+	public  User getDetailUserByIdUser(int iduser) {
+		System.out.println(iduser);
+		String query = "select * FROM user where iduser=?";
+		List<User> datas = JDBIConnector.get().withHandle(handle -> {
+			return handle.createQuery(query)
+					.bind(0, iduser)
+					.mapToBean(User.class).stream().collect(Collectors.toList());
+		});
+		if (datas.size() > 0) {
+			return datas.get(0);// lấy duy nhất 1 sản phẩm
+		}
+		return null;
+	}
+
 	public static void main(String[] args) {
 		List<User> users = JDBIConnector.get()
 				.withHandle(h -> h.createQuery("select * from user where username = ? and status = 1")
-				.bind(0, "mainguyen")
-				.map(new UserMapper()).list());
+						.bind(0, "mainguyen")
+						.map(new UserMapper()).list());
 		System.out.println(users);
-				
+
 		User data = dangNhap("mainguyen", "abc123");
 		System.out.println(data);
 		// User input = new User("Nguyen", "Minh", "minh@gmail.com", "minhnguyen",
@@ -307,6 +328,6 @@ public class UserService {
 		System.out.println(test);
 	}
 
-	
+
 }
 

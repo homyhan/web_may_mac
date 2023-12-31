@@ -55,6 +55,13 @@ public class Product implements Serializable {
         this.startAt = startAt;
         this.content = content;
     }
+    public Product(String title, String image, float price) {
+
+        this.title = title;
+        this.image = image;
+        this.price = price;
+
+    }
 
     public int getIdproduct() {
         return idproduct;
