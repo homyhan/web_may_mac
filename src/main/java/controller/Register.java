@@ -21,6 +21,8 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 @WebServlet(name = "Register ", value = "/register")
@@ -197,10 +199,17 @@ public class Register extends HttpServlet {
     }
 
     private void savePrivateKeyToFile(String privateKey) throws IOException {
+        // Lấy ngày và giờ hiện tại
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        // Định dạng chuỗi
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd_MM_yyyy_HH_mm_ss");
+        String formattedDateTime = currentDateTime.format(formatter);
+
         // Thực hiện lưu file vào thư mục hoặc nơi khác
         // Ví dụ: Lưu file vào thư mục "private_keys"
+        String fileName = formattedDateTime+"_privatekey.txt";
         String directoryPath = "D:\\HAN\\AT";
-        String fileName = "privatekey2.txt";
 
         File directory = new File(directoryPath);
         if (!directory.exists()) {
@@ -230,8 +239,15 @@ public class Register extends HttpServlet {
     }
 
     private static void createPDFWithPrivateKey(String privateKey) throws IOException {
+        // Lấy ngày và giờ hiện tại
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        // Định dạng chuỗi
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd_MM_yyyy_HH_mm_ss");
+        String formattedDateTime = currentDateTime.format(formatter);
+
         // Đường dẫn và tên tệp PDF
-        String pdfFilePath = "D:\\HAN\\AT\\privatekey2.pdf";
+        String pdfFilePath = "D:\\HAN\\AT\\"+formattedDateTime+"_privatekey.pdf";
 
         // Tạo một đối tượng Document
         Document document = new Document();
