@@ -2,6 +2,9 @@ package model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Invoice implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -18,13 +21,32 @@ public class Invoice implements Serializable {
     }
 
     public Invoice(int iduser, int idorder, int status, int mode,
-            Timestamp createAt,
-            String content) {
+                   Timestamp createAt,
+                   String content) {
         this.iduser = iduser;
         this.idorder = idorder;
         this.status = status;
         this.mode = mode;
         this.createAt = createAt;
+        this.content = content;
+    }
+
+    public Invoice(int iduser, int idorder, int status, int mode, String createAtString, String content) {
+        this.iduser = iduser;
+        this.idorder = idorder;
+        this.status = status;
+        this.mode = mode;
+
+        // Chuyển đổi String thành Timestamp
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        try {
+            Date parsedDate = dateFormat.parse(createAtString);
+            this.createAt = new Timestamp(parsedDate.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            // Xử lý ngoại lệ nếu có
+        }
+
         this.content = content;
     }
 
@@ -97,3 +119,4 @@ public class Invoice implements Serializable {
                 '}';
     }
 }
+

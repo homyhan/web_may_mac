@@ -1,21 +1,26 @@
 package controller.customer;
 
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import DAO.IVoucherDaO;
 import DAO.impl.VoucherDaO;
+import model.*;
 import model.Address;
-import model.User;
-import model.Voucher;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import response.InvoiceResponse;
-import service.AddressService;
-import service.InvoiceService;
-import service.UserService;
+import service.*;
 
 import javax.servlet.annotation.*;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
+import java.io.ObjectOutputStream;
+import java.security.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @WebServlet(name = "TaiKhoan", value = "/tai-khoan/*")
 public class TaiKhoan extends HttpServlet {
@@ -29,28 +34,32 @@ public class TaiKhoan extends HttpServlet {
 			action = "/";
 		}
 		switch (action) {
-		case "/update-address":
-			if (session.getAttribute("addressDefault") == null) {
-				response.sendRedirect("thong-tin-khach-hang/dia-chi.jsp");
+			case "/update-address":
+				if (session.getAttribute("addressDefault") == null) {
+					response.sendRedirect("thong-tin-khach-hang/dia-chi.jsp");
+					return;
+				}
+				break;
+			case "/don-hang":
+				try {
+					showInvoice(request, response);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 				return;
-			}
-			break;
-		case "/don-hang":
-			showInvoice(request, response);
-			return;
-		case "/dia-chi":
-			showAddress(request, response);
-			return;
-		case "/reset-password":
-			resetPassword(request, response);
-			return;
+			case "/dia-chi":
+				showAddress(request, response);
+				return;
+			case "/reset-password":
+				resetPassword(request, response);
+				return;
 			case "/voucher":
 				showListVoucher(request, response);
 				return;
 
 
-		default:
-			break;
+			default:
+				break;
 		}
 		// request.getRequestDispatcher("template/dang-nhap.jsp").forward(request,response);
 		return;
@@ -73,7 +82,7 @@ public class TaiKhoan extends HttpServlet {
 	}
 
 	private void showInvoice(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+			throws Exception {
 		System.out.println("show invoice");
 		HttpSession session = request.getSession(true);
 		if (session.getAttribute("userLogin") == null) {
@@ -83,9 +92,114 @@ public class TaiKhoan extends HttpServlet {
 		// login thành công đã có user
 		User info = (User) session.getAttribute("userLogin");
 		List<InvoiceResponse> invoiceList = InvoiceService.getListInvoiceByUserId(info.getIduser());
-		request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
-		request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
-		return;
+
+		String publicKey = (String) session.getAttribute("publicKeySession");
+		String emailCustomer = (String) session.getAttribute("emailCustomer");
+		System.out.println("pbKey: "+publicKey);
+//		PublicKey pbKeyConverted = convertStringToPublicKey(publicKey);
+		PublicKey publicKeyConverted;
+		RSA rsa = new RSA();
+		publicKeyConverted = rsa.getPublicKeyFromString(publicKey);
+		List<Order> listOrder = OrderService.getListOrderByUserId(info.getIduser());
+		System.out.println("In danh sach don hang");
+		System.out.println(listOrder.toString());
+		ArrayList<Order> listOrderChanged = new ArrayList<>();
+//		Order orderGetFromDB = new Order();
+		for (Order order : listOrder) {
+			Order orderGetFromDB = new Order(order.getIduser(), order.getIdaddress(), order.getSubtotal(), order.getItemdiscount(), order.getShipping(), order.getIdcoupons(), order.getGrandtotal(), order.getStatus(), order.getContent());
+			System.out.println();
+			System.out.println("Obj: " + orderGetFromDB);
+			System.out.println(order.getSignature());
+
+
+			//START TEST 2812
+			int idOrder = order.getIdorder();
+			List<OrderDetail> orDetailList = OrderDetailService.getProductCategory(idOrder);
+
+			List<OrderDetail> odDetailListNew = new ArrayList<>();
+			for (OrderDetail od : orDetailList) {
+				OrderDetail odD = new OrderDetail(idOrder, od.getIdproduct(), od.getQuantity(), od.getSize(), od.getPrice(), od.getDiscount(), od.getIsmeasure(), od.getWeight(), od.getHeight(), od.getRound1(), od.getRound2(), od.getRound3(), od.getContent());
+				odDetailListNew.add(odD);
+			}
+
+			System.out.println("Ds odDetail");
+			System.out.println(odDetailListNew);
+
+			List<Invoice> invoiceListA = InvoiceService.getDataInvoiceByIdOrder(idOrder);
+			System.out.println(idOrder);
+			System.out.println("Log invoice List A");
+			System.out.println(invoiceListA);
+			Invoice invoiceOne = invoiceListA.get(0);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+			String formattedDate = dateFormat.format(invoiceOne.getCreateAt());
+
+			Invoice invoiceObj = new Invoice(info.getIduser(), idOrder, invoiceOne.getStatus(), invoiceOne.getMode(), formattedDate, invoiceOne.getContent());
+
+			boolean checkTest = verifySignature3Obj(orderGetFromDB, odDetailListNew, invoiceObj, Base64.getDecoder().decode(order.getSignature()), publicKeyConverted);
+			System.out.print("In checktest: ");
+			System.out.println(checkTest);
+
+
+			if(!checkTest){
+
+				System.out.println("Da gui email thanh cong");
+				listOrderChanged.add(order);
+
+			}
+			for (Order or : listOrderChanged){
+				List<Invoice> invoicesL = getListInvoiceByIdOrder(or.getIdorder());
+				Invoice invoice = invoicesL.get(0);
+				if(listOrderChanged.size()>0 && invoice.getStatus()!=0){
+					System.out.println("So luong don hang bi thay doi la: ");
+					System.out.println(listOrderChanged.size());
+					System.out.println(listOrderChanged);
+					updateInvoiceStatus(invoice.getIdinvoice(), 0);
+					sendEmail(emailCustomer,  listOrderChanged);
+					System.out.println("Da gui email thanh cong");
+				}
+			}
+
+			System.out.println("In tai khoan");
+			System.out.println(orderGetFromDB);
+			System.out.println(odDetailListNew);
+			System.out.println(invoiceObj);
+
+			byte[] b1 = toByteArray(orderGetFromDB);
+			byte[] b3 = toByteArray(invoiceObj);
+
+			byte[] rsArrOrderDetail = new byte[0];
+
+			for (OrderDetail o: odDetailListNew){
+				byte[] odToArrayByte = toByteArray(o);
+				// Tạo mảng mới có kích thước là tổng kích thước của mảng cũ và mảng mới
+				byte[] newArray = new byte[rsArrOrderDetail.length + odToArrayByte.length];
+
+				// Sao chép dữ liệu từ mảng cũ và mảng mới vào mảng mới
+				System.arraycopy(rsArrOrderDetail, 0, newArray, 0, rsArrOrderDetail.length);
+				System.arraycopy(odToArrayByte, 0, newArray, rsArrOrderDetail.length, odToArrayByte.length);
+
+				// Gán mảng mới cho mảng lớn
+				rsArrOrderDetail = newArray;
+
+			}
+
+			byte[] rsConcate = concatenateByteArrays(b1, rsArrOrderDetail, b3);
+			System.out.println("In mang byte order tai khoan: ");
+			System.out.println(hashData2412(b1));
+
+			System.out.println("In mang byte order detail tai khoan: ");
+			System.out.println(hashData2412(rsArrOrderDetail));
+
+			System.out.println("In mang byte invoice tai khoan: ");
+			System.out.println(hashData2412(b3));
+
+			System.out.println("In mang byte da gop 3 mang tai khoan: ");
+			System.out.println(hashData2412(rsConcate));
+
+			request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
+			request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
+
+		}
 	}
 
 	private void showAddress(HttpServletRequest request, HttpServletResponse response)
@@ -112,26 +226,26 @@ public class TaiKhoan extends HttpServlet {
 			action = "/";
 		}
 		switch (action) {
-		case "/them-dia-chi":
-			addAddress(request, response);
-			return;
-		case "/cap-nhat-tai-khoan":
-			updateUser(request, response);
-			return;
-		case "/quen-mat-khau":
-			quenMatKhau(request, response);
-			return;
-		case "/thay-doi-mat-khau":
-			thayDoiMatKhau(request, response);
-			return;
-		case "/reset-password":
-			resetPasswordPost(request, response);
-			return;
+			case "/them-dia-chi":
+				addAddress(request, response);
+				return;
+			case "/cap-nhat-tai-khoan":
+				updateUser(request, response);
+				return;
+			case "/quen-mat-khau":
+				quenMatKhau(request, response);
+				return;
+			case "/thay-doi-mat-khau":
+				thayDoiMatKhau(request, response);
+				return;
+			case "/reset-password":
+				resetPasswordPost(request, response);
+				return;
 			case "/voucher":
 				showListVoucher(request, response);
 				return;
-		default:
-			break;
+			default:
+				break;
 		}
 		// request.getRequestDispatcher("template/dang-nhap.jsp").forward(request,response);
 		return;
@@ -167,7 +281,7 @@ public class TaiKhoan extends HttpServlet {
 		System.out.println(isInsert);
 
 		Address addressDefaut = AddressService.getAddressDefaultByIdUser(info.getIduser());// cập nhật lại địa chỉ để sử
-																							// dụng khi mua hàng
+		// dụng khi mua hàng
 		session.setAttribute("addressDefault", addressDefaut);// thông tin địa chỉ mặc định
 
 		response.sendRedirect("/tai-khoan/dia-chi");
@@ -290,7 +404,7 @@ public class TaiKhoan extends HttpServlet {
 		request.getRequestDispatcher("/template/quen-mat-khau.jsp").forward(request, response);
 		return;
 	}
-	
+
 	private void resetPasswordPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		HttpSession session = request.getSession(true);
@@ -337,4 +451,272 @@ public class TaiKhoan extends HttpServlet {
 		response.sendRedirect("/products");// method get
 		return;
 	}
+
+
+
+	private static PublicKey convertStringToPublicKey(String str) throws Exception {
+		RSA rsa = new RSA();
+		PublicKey pbKey = rsa.getPublicKeyFromString(str);
+		return pbKey;
+	}
+	public static byte[] convertStringToByteArray(String input) {
+		// Kiểm tra xem chuỗi đầu vào có null hay không
+		if (input == null) {
+			return null;
+		}
+
+		// Chuyển chuỗi thành mảng byte
+		return input.getBytes();
+	}
+
+	public static byte[] toByteArray(Order or) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(or);
+			oos.close();
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public static byte[] toByteArray(Object obj) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(obj);
+			oos.close();
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private static byte[] hashData(byte[] data) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		return md.digest(data);
+	}
+
+
+	public static byte[] toByteArray2(Order or) {
+		try {
+//			Arrays.sort(or.getProperties());
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(or);
+			oos.close();
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+	private static String hashData2412(byte[] data) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(data);
+			return bytesToHex2412(hash);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private static String bytesToHex2412(byte[] bytes) {
+		StringBuilder result = new StringBuilder();
+		for (byte b : bytes) {
+			result.append(String.format("%02X", b));
+		}
+		return result.toString();
+	}
+
+	private static String printIdOrder(ArrayList<Integer> idInvoicesList){
+		String idOrderString = "";
+		for(Integer idInvoice : idInvoicesList){
+			idOrderString+=idInvoice+", ";
+		}
+		return idOrderString;
+	}
+
+	public static List<Integer> getOrderIds(List<Order> orderList) {
+		List<Integer> idList = new ArrayList<>();
+
+		for (Order order : orderList) {
+			idList.add(order.getIdorder());
+		}
+
+		return idList;
+	}
+
+	private void sendEmail(String toEmail, ArrayList<Order> orderList) {
+
+		int count = orderList.size();
+
+		List<Integer> idList = getOrderIds(orderList);
+
+		ArrayList<Integer> idInvoice = new ArrayList<>();
+
+		ArrayList<Product> prodList = new ArrayList<>();
+
+		ArrayList<Invoice> invoicesList = new ArrayList<>();
+
+		String contentTd = "";
+
+		final String fromEmail = "thienan21215@gmail.com"; // Email của bạn
+		final String password = "wqubwaintvcbufnn"; // Mật khẩu email của bạn
+
+		Properties props = new Properties();
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.host", "smtp.gmail.com");
+		props.put("mail.smtp.port", "587");
+
+		Session session = Session.getInstance(props, new Authenticator() {
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(fromEmail, password);
+			}
+		});
+
+//		int maHoaDon = Integer.parseInt(printIdOrder(orderList));
+
+
+		for (Integer id : idList){
+			System.out.println("Hoa don ma don hang bi thay doi: ");
+
+			System.out.println(getListInvoiceByIdOrder(id).toString());
+			Product prod = ProductService.getProductByIdOrder(id).get(0);
+//			prodList
+			Invoice inv = getListInvoiceByIdOrder(id).get(0);
+			idInvoice.add(inv.getIdinvoice());
+			System.out.println("ID hoa don: ");
+			System.out.println(inv.getIdinvoice());
+//			updateInvoiceStatus(inv.getIdinvoice(), 0);
+			System.out.println("Da cap nhat trang thai");
+			prodList.add(prod);
+
+		}
+
+		for (Product p: prodList){
+			contentTd+="<p style=\"text-indent: 40px;\">"+p.getTitle()+" - "+p.getPrice()+"</p>";
+		}
+
+
+		try {
+			String content = "<!DOCTYPE html>\n" +
+					"<html lang=\"en\">\n" +
+					"<head>\n" +
+					"    <meta charset=\"UTF-8\">\n" +
+					"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+					"    <title>Document</title>\n" +
+
+					"</head>\n" +
+					"<body>\n" +
+					"    <h3>Công ty May Mặc G15 gửi đến quý khách <span style=\"color: red;\"><b>CẢNH BÁO</b></span></h3>\n" +
+					"    <p>Chúng tôi vừa nhận thấy thông tin "+count+" đơn hàng của quý khách đã bị chỉnh sửa thông tin</p>\n"  +
+					"    <p>Mã đơn hàng bị thay đổi là: "+printIdOrder(idInvoice)+" \n"  +
+					"	<p>Thông tin sản phẩm: </p>"+
+					contentTd+
+					"    <p>Để bảo vệ tài khoản của quý khách được an toàn chúng tôi sẽ tiến hành hủy đơn hàng. Đối với các đơn hàng đã thanh toán G15 sẽ hoàn trả lại số tiền cho quý khách</p>\n" +
+					"    <p>Chúng tôi chân thành xin lỗi vì sự bất tiện này</p>\n" +
+					"    <p>Cảm ơn quý khách đã tin chọn G15</p>\n" +
+					"    <p>Mọi thắc mắc xin vui lòng liên hệ:</p>\n" +
+					"    <p>Số điện thoại: 0270399999</p>\n" +
+					"    <p>Email: thienan21215@gmail.com</p>\n" +
+					"</body>\n" +
+					"</html>";
+			Message message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(fromEmail));
+			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+			message.setSubject("[CẢNH BÁO] CTY MAY MẶC G15 - ĐƠN HÀNG");
+//            message.setText(content);
+			message.setContent(content, "text/html; charset=utf-8");
+			Transport.send(message);
+			System.out.println("Email sent successfully.");
+
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			// Xử lý lỗi gửi email
+		}
+	}
+
+
+	private static List<Invoice> getListInvoiceByIdOrder(int idOrder){
+//		ArrayList<Invoice> listInvoice = new ArrayList<>();
+		return InvoiceService.getDataInvoiceByIdOrder(idOrder);
+	}
+
+
+
+	private void updateInvoiceStatus(Integer idInvoice, int status){
+
+		boolean isUpdate = InvoiceService.updateInvoiceStatus(idInvoice, status);
+		System.out.println(isUpdate);
+
+
+		System.out.println("redirect don-hang");
+		return;
+	}
+
+	public static byte[] concatenateByteArrays(byte[] order, byte[] orderdetail, byte[] invoice) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+			baos.write(order);
+			baos.write(orderdetail);
+			baos.write(invoice);
+
+			return baos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+
+	private static boolean verifySignature3Obj(Order order, List<OrderDetail> orDetailL, Invoice invoice, byte[] digitalSignature, PublicKey publicKey) throws Exception {
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		ObjectOutputStream oos = new ObjectOutputStream(baos);
+//		oos.writeObject(order);
+//		oos.close();
+		byte[] rsArrOrderDetail = new byte[0];
+		for (OrderDetail od: orDetailL){
+			byte[] odToArrayByte = toByteArray(od);
+			// Tạo mảng mới có kích thước là tổng kích thước của mảng cũ và mảng mới
+			byte[] newArray = new byte[rsArrOrderDetail.length + odToArrayByte.length];
+
+			// Sao chép dữ liệu từ mảng cũ và mảng mới vào mảng mới
+			System.arraycopy(rsArrOrderDetail, 0, newArray, 0, rsArrOrderDetail.length);
+			System.arraycopy(odToArrayByte, 0, newArray, rsArrOrderDetail.length, odToArrayByte.length);
+
+			// Gán mảng mới cho mảng lớn
+			rsArrOrderDetail = newArray;
+		}
+
+		byte[] orderBytes = toByteArray(order);
+//		byte[] orDetailByte = toByteArray(orDetai);
+		byte[] invoiceByte = toByteArray(invoice);
+
+		byte[] rsConcate = concatenateByteArrays(orderBytes, rsArrOrderDetail, invoiceByte);
+
+
+		byte[] hashResult = hashData(rsConcate);
+
+		System.out.println("In mang chua Hash mang to: ");
+		System.out.println(hashData2412(hashResult));
+
+
+		Signature signature = Signature.getInstance("SHA256withRSA");
+		signature.initVerify(publicKey);
+		signature.update(hashResult);
+
+		return signature.verify(digitalSignature);
+	}
+
 }

@@ -71,6 +71,46 @@ public class ProductService {
         });
     }
 
+//    LAY DANH SACH SAN PHAM TU IDORDER
+
+    public static List<Product> getProductByIdOrder(List<Integer> orderIds) {
+
+//        String placeholders = String.join(",", java.util.Collections.nCopies(orderIds.size(), "?"));
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < orderIds.size(); i++) {
+            placeholders.append("?,");
+        }
+        placeholders.deleteCharAt(placeholders.length() - 1);
+        // Tạo câu truy vấn sử dụng IN và chuỗi tham số
+        String query = "SELECT product.title, product.image, product.price " +
+                "FROM product " +
+                "JOIN orderdetail ON product.idproduct = orderdetail.idproduct " +
+                "JOIN invoice ON orderdetail.idorders = invoice.idorder " +
+                "WHERE invoice.idorder IN (" + placeholders + ")";
+
+
+//        String query = "select * from product p where status = 1 order by price desc";
+        return JDBIConnector.get().withHandle(handle -> {
+            return handle.createQuery(query)
+                    .mapToBean(Product.class).stream().collect(Collectors.toList());
+        });
+    }
+
+    public static List<Product> getProductByIdOrder(int orderIds) {
+
+//        String placeholders = String.join(",", java.util.Collections.nCopies(orderIds.size(), "?"));
+
+        // Tạo câu truy vấn sử dụng IN và chuỗi tham số
+        String query = "SELECT product.title, product.image, product.price FROM product JOIN orderdetail ON product.idproduct = orderdetail.idproduct JOIN invoice ON orderdetail.idorders = invoice.idorder WHERE invoice.idorder = ?";
+
+
+//        String query = "select * from product p where status = 1 order by price desc";
+        return JDBIConnector.get().withHandle(handle -> {
+            return handle.createQuery(query)
+                    .bind(0, orderIds)
+                    .mapToBean(Product.class).stream().collect(Collectors.toList());
+        });
+    }
     // thêm sản phẩm mới vào
     public static boolean inserProduct(Product input) {
         input.setStatus(1);
@@ -141,7 +181,7 @@ public class ProductService {
     }
 
     public static boolean updatePByIdProduct(int id, Product p) {
-    	System.out.println(id);
+        System.out.println(id);
         // query > insert
         String query = "update product set idcategory=?, idmaterial=?, idcolor=?, sku=?, title=?, image=?, price=?, discount=?, mode=?, status=?, startAt=? where idproduct = ?";
         int result = JDBIConnector.get().withHandle(handle -> {
@@ -219,9 +259,9 @@ public class ProductService {
 
         List<ProductResponse> lists = JDBIConnector.get()
                 .withHandle(h -> h.createQuery(
-                        "select p.*, m.title as namematerialmapper from product p join material m on p.idmaterial = m.idmaterial where p.status = 1;")
+                                "select p.*, m.title as namematerialmapper from product p join material m on p.idmaterial = m.idmaterial where p.status = 1;")
                         .map(new ProductResponseMapper()).list());
-                        // .mapToBean(ProductResponse.class).stream().collect(Collectors.toList());
+        // .mapToBean(ProductResponse.class).stream().collect(Collectors.toList());
         System.out.println(lists);
     }
 }
