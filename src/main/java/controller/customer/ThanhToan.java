@@ -244,7 +244,14 @@ public class ThanhToan extends HttpServlet {
 		Invoice invoice = new Invoice(iduser, idorder, Contants.INVOIE_STATUS_WAITING_APPROVE, Contants.INVOICE_MODE_TRUCTIEP,
 				new Timestamp(System.currentTimeMillis()), address.getContent());
 		boolean isInsert = InvoiceService.insertInvoice(invoice);
-		byte[] byteInvoice = toByteArray(invoice);
+
+//		Invoice invoiceSign = new Invoice(iduser, idorder, Contants.INVOICE_MODE_TRUCTIEP,new Timestamp(System.currentTimeMillis()), address.getContent());
+
+		Invoice invoiceGetFromDB = InvoiceService.getInvoiceByIdorder(idorder);
+		Invoice invoiceSign = new Invoice(iduser, idorder, Contants.INVOICE_MODE_TRUCTIEP, invoiceGetFromDB.getCreateAt(), address.getContent());
+		byte[] byteInvoice = toByteArray(invoiceSign);
+		System.out.println("????????In invoiceSign?????????");
+		System.out.println(invoiceSign);
 
 		// gộp
 		byte[] rsConcate = concatenateByteArrays(byteOrder, rsArrOrderDetail, byteInvoice);

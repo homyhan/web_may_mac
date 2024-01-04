@@ -31,10 +31,40 @@ public class Invoice implements Serializable {
         this.content = content;
     }
 
+    public Invoice(int iduser, int idorder, int mode,
+                   Timestamp createAt,
+                   String content) {
+        this.iduser = iduser;
+        this.idorder = idorder;
+
+        this.mode = mode;
+        this.createAt = createAt;
+        this.content = content;
+    }
+
     public Invoice(int iduser, int idorder, int status, int mode, String createAtString, String content) {
         this.iduser = iduser;
         this.idorder = idorder;
         this.status = status;
+        this.mode = mode;
+
+        // Chuyển đổi String thành Timestamp
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        try {
+            Date parsedDate = dateFormat.parse(createAtString);
+            this.createAt = new Timestamp(parsedDate.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            // Xử lý ngoại lệ nếu có
+        }
+
+        this.content = content;
+    }
+
+    public Invoice(int iduser, int idorder, int mode, String createAtString, String content) {
+        this.iduser = iduser;
+        this.idorder = idorder;
+
         this.mode = mode;
 
         // Chuyển đổi String thành Timestamp
