@@ -133,8 +133,9 @@ public class TaiKhoan extends HttpServlet {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 			String formattedDate = dateFormat.format(invoiceOne.getCreateAt());
 
-			Invoice invoiceObj = new Invoice(info.getIduser(), idOrder, invoiceOne.getStatus(), invoiceOne.getMode(), formattedDate, invoiceOne.getContent());
-
+			Invoice invoiceObj = new Invoice(info.getIduser(), idOrder, invoiceOne.getMode(), formattedDate, invoiceOne.getContent());
+			System.out.println("??????????????In invoice obj");
+			System.out.println(invoiceObj);
 			boolean checkTest = verifySignature3Obj(orderGetFromDB, odDetailListNew, invoiceObj, Base64.getDecoder().decode(order.getSignature()), publicKeyConverted);
 			System.out.print("In checktest: ");
 			System.out.println(checkTest);
@@ -196,10 +197,11 @@ public class TaiKhoan extends HttpServlet {
 			System.out.println("In mang byte da gop 3 mang tai khoan: ");
 			System.out.println(hashData2412(rsConcate));
 
-			request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
-			request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
+
 
 		}
+		request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
+		request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
 	}
 
 	private void showAddress(HttpServletRequest request, HttpServletResponse response)
