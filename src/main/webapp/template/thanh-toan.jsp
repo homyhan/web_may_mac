@@ -208,6 +208,8 @@
                     </div>
                     <% } %>
 
+                        <a href="/template/quen-key.jsp" id="quenKey">Quên PrivateKey</a>
+
                     <button class="btn w-100" id="finish_order_btn" type="submit">ĐẶT
                         HÀNG</button>
                 </form>

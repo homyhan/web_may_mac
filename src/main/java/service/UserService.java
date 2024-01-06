@@ -318,6 +318,18 @@ public class UserService {
 		});
 	}
 
+	//UPDATE SIGNATURE
+	public static int updatePublicKeyForUser(int userId, String publickey) {
+		// query > update
+		String updateQuery = "UPDATE user SET publickey = ? WHERE iduser = ?";
+		return JDBIConnector.get().withHandle(handle -> {
+			return handle.createUpdate(updateQuery)
+					.bind(0, publickey)
+					.bind(1, userId)
+					.execute();
+		});
+	}
+
 	public static void main(String[] args) {
 		List<User> users = JDBIConnector.get()
 				.withHandle(h -> h.createQuery("select * from user where username = ? and status = 1")
