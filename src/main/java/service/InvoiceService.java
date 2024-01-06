@@ -124,6 +124,16 @@ public class InvoiceService {
 		});
 	}
 
+	public static Invoice getInvoiceByIdorder(int idorder) {
+		return JDBIConnector.get().withHandle(handle -> {
+			return handle.createQuery("SELECT * FROM invoice WHERE idorder = :idorder")
+					.bind("idorder", idorder)
+					.mapToBean(Invoice.class)
+					.findFirst()
+					.orElse(null); // Trả về null nếu không tìm thấy Invoice với idInvoie cụ thể
+		});
+	}
+
 
 	public static void main(String[] args) {
 

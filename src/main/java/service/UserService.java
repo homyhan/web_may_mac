@@ -323,6 +323,28 @@ public class UserService {
 		return null;
 	}
 
+	public static User getUserById(int userId) {
+		return JDBIConnector.get().withHandle(handle -> {
+			return handle.createQuery("SELECT * FROM user WHERE iduser = :iduser")
+					.bind("iduser", userId)
+					.mapToBean(User.class)
+					.findFirst()
+					.orElse(null); // Trả về null nếu không tìm thấy User với iduser cụ thể
+		});
+	}
+
+	//UPDATE SIGNATURE
+	public static int updatePublicKeyForUser(int userId, String publickey) {
+		// query > update
+		String updateQuery = "UPDATE user SET publickey = ? WHERE iduser = ?";
+		return JDBIConnector.get().withHandle(handle -> {
+			return handle.createUpdate(updateQuery)
+					.bind(0, publickey)
+					.bind(1, userId)
+					.execute();
+		});
+	}
+
 	public static void main(String[] args) {
 		List<User> users = JDBIConnector.get()
 				.withHandle(h -> h.createQuery("select * from user where username = ? and status = 1")

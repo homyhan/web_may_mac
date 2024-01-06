@@ -15,11 +15,11 @@ import response.InvoiceResponse;
 import service.*;
 
 import javax.servlet.annotation.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.security.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @WebServlet(name = "TaiKhoan", value = "/tai-khoan/*")
@@ -93,7 +93,8 @@ public class TaiKhoan extends HttpServlet {
 		User info = (User) session.getAttribute("userLogin");
 		List<InvoiceResponse> invoiceList = InvoiceService.getListInvoiceByUserId(info.getIduser());
 
-		String publicKey = (String) session.getAttribute("publicKeySession");
+//		String publicKey = (String) session.getAttribute("publicKeySession");
+		String publicKey  = UserService.getUserById(info.getIduser()).getPublicKey();
 		String emailCustomer = (String) session.getAttribute("emailCustomer");
 		System.out.println("pbKey: "+publicKey);
 //		PublicKey pbKeyConverted = convertStringToPublicKey(publicKey);
@@ -133,8 +134,9 @@ public class TaiKhoan extends HttpServlet {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 			String formattedDate = dateFormat.format(invoiceOne.getCreateAt());
 
-			Invoice invoiceObj = new Invoice(info.getIduser(), idOrder, invoiceOne.getStatus(), invoiceOne.getMode(), formattedDate, invoiceOne.getContent());
-
+			Invoice invoiceObj = new Invoice(info.getIduser(), idOrder, invoiceOne.getMode(), formattedDate, invoiceOne.getContent());
+			System.out.println("??????????????In invoice obj");
+			System.out.println(invoiceObj);
 			boolean checkTest = verifySignature3Obj(orderGetFromDB, odDetailListNew, invoiceObj, Base64.getDecoder().decode(order.getSignature()), publicKeyConverted);
 			System.out.print("In checktest: ");
 			System.out.println(checkTest);
@@ -196,10 +198,11 @@ public class TaiKhoan extends HttpServlet {
 			System.out.println("In mang byte da gop 3 mang tai khoan: ");
 			System.out.println(hashData2412(rsConcate));
 
-			request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
-			request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
+
 
 		}
+		request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
+		request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
 	}
 
 	private void showAddress(HttpServletRequest request, HttpServletResponse response)
@@ -243,6 +246,13 @@ public class TaiKhoan extends HttpServlet {
 				return;
 			case "/voucher":
 				showListVoucher(request, response);
+				return;
+			case "/quen-key":
+				try {
+					quenKey(request, response);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 				return;
 			default:
 				break;
@@ -717,6 +727,140 @@ public class TaiKhoan extends HttpServlet {
 		signature.update(hashResult);
 
 		return signature.verify(digitalSignature);
+	}
+
+	private static byte[] signHashOrder(byte[] hashedData, PrivateKey privateKey) throws Exception {
+
+		Signature signature = Signature.getInstance("SHA256withRSA");
+		signature.initSign(privateKey);
+		signature.update(hashedData);
+
+		return signature.sign();
+	}
+
+	protected void quenKey(HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
+		HttpSession session = request.getSession(true);
+		User info = (User) session.getAttribute("userLogin");
+		System.out.println(info.getUsername());
+		if (info != null) {
+
+			String privateKey = request.getParameter("privateKeyReq");
+			String publicKey = request.getParameter("publicKeyReq");
+			savePrivateKeyToFile(privateKey);
+			int updatedPublicKey  = UserService.updatePublicKeyForUser(info.getIduser(), publicKey);
+			PrivateKey privateKeyConverted = new RSA().getPrivateKeyFromString(privateKey);
+
+			System.out.println("In cap key");
+			System.out.println(privateKey);
+			System.out.println(publicKey);
+			List<Order> listOrder = OrderService.getListOrderByUserId(info.getIduser());
+			for (Order order : listOrder) {
+				Order orderGetFromDB = new Order(order.getIduser(), order.getIdaddress(), order.getSubtotal(), order.getItemdiscount(), order.getShipping(), order.getIdcoupons(), order.getGrandtotal(), order.getStatus(), order.getContent());
+				byte[] byteOrder = toByteArray(orderGetFromDB);
+
+				int idOrder = order.getIdorder();
+				List<OrderDetail> orDetailList = OrderDetailService.getProductCategory(idOrder);
+
+
+				byte[] rsArrOrderDetail = new byte[0];
+				List<OrderDetail> odDetailListNew = new ArrayList<>();
+				for (OrderDetail od : orDetailList) {
+					OrderDetail odD = new OrderDetail(idOrder, od.getIdproduct(), od.getQuantity(), od.getSize(), od.getPrice(), od.getDiscount(), od.getIsmeasure(), od.getWeight(), od.getHeight(), od.getRound1(), od.getRound2(), od.getRound3(), od.getContent());
+					odDetailListNew.add(odD);
+				}
+
+				for (OrderDetail o: odDetailListNew){
+					byte[] odToArrayByte = toByteArray(o);
+					// Tạo mảng mới có kích thước là tổng kích thước của mảng cũ và mảng mới
+					byte[] newArray = new byte[rsArrOrderDetail.length + odToArrayByte.length];
+
+					// Sao chép dữ liệu từ mảng cũ và mảng mới vào mảng mới
+					System.arraycopy(rsArrOrderDetail, 0, newArray, 0, rsArrOrderDetail.length);
+					System.arraycopy(odToArrayByte, 0, newArray, rsArrOrderDetail.length, odToArrayByte.length);
+
+					// Gán mảng mới cho mảng lớn
+					rsArrOrderDetail = newArray;
+
+				}
+
+				List<Invoice> invoiceListA = InvoiceService.getDataInvoiceByIdOrder(idOrder);
+
+				Invoice invoiceOne = invoiceListA.get(0);
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+				String formattedDate = dateFormat.format(invoiceOne.getCreateAt());
+
+				Invoice invoiceObj = new Invoice(info.getIduser(), idOrder, invoiceOne.getMode(), formattedDate, invoiceOne.getContent());
+				byte[] invoiceByte = toByteArray(invoiceObj);
+
+				byte[] rsConcate = concatenateByteArrays(byteOrder, rsArrOrderDetail, invoiceByte);
+				byte[] hashConcate = hashData(rsConcate);
+				byte[] signature = signHashOrder(hashConcate, privateKeyConverted);
+				byte[] okSignature = Arrays.copyOfRange(signature, 0, 256);
+
+				int updatedOrder = OrderService.updateSignatureForOrder(idOrder, Base64.getEncoder().encodeToString(okSignature));
+
+			}
+			System.out.println("Cap nhat thanh cong");
+			request.getRequestDispatcher("/template/gio-hang2.jsp").forward(request, response);
+			return;
+		}else{
+			request.getRequestDispatcher("/template/dang-nhap.jsp").forward(request, response);
+			return;
+
+		}
+
+
+
+	}
+
+	private void savePrivateKeyToFile(String privateKey) throws IOException {
+		// Lấy ngày và giờ hiện tại
+		LocalDateTime currentDateTime = LocalDateTime.now();
+
+		// Định dạng chuỗi
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd_MM_yyyy_HH_mm_ss");
+		String formattedDateTime = currentDateTime.format(formatter);
+
+		// Thực hiện lưu file vào thư mục hoặc nơi khác
+		// Ví dụ: Lưu file vào thư mục "private_keys"
+		String fileName = formattedDateTime+"_changed"+"_privatekey.txt";
+		String directoryPath = "D:\\HAN\\AT";
+
+
+		File directory = new File(directoryPath);
+		if (!directory.exists()) {
+			directory.mkdirs(); // Tạo thư mục nếu nó chưa tồn tại
+		}
+
+		File file = new File(directory, fileName);
+
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+			writer.write(privateKey);
+		}
+	}
+
+	private static boolean checkKeyPair(PublicKey publicKey, PrivateKey privateKey) {
+		try {
+			// Tạo một đối tượng Signature với thuật toán SHA256withRSA
+			Signature signature = Signature.getInstance("SHA256withRSA");
+
+			// Ký một mảng byte bằng private key
+			signature.initSign(privateKey);
+			byte[] message = "Hello, World!".getBytes();
+			signature.update(message);
+			byte[] signedData = signature.sign();
+
+			// Xác minh chữ ký bằng public key
+			signature.initVerify(publicKey);
+			signature.update(message);
+
+			// Nếu xác minh thành công, chứng tỏ public key và private key là một cặp hợp lệ
+			return signature.verify(signedData);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 }
