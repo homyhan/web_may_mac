@@ -54,7 +54,7 @@ public class InvoiceService {
 	}
 
 	public static boolean deleteInvoiceBeforeStartAt(int userId, String startAt){
-		String query = "update invoice set status = 0 where idusers = ? AND createAt > ?";
+		String query = "update invoice set status = 0 where idusers = ? AND createAt < ?";
 		int result = JDBIConnector.get().withHandle(handle -> {
 			return handle.createUpdate(query).bind(0, userId).bind(1, startAt).execute();
 		});
