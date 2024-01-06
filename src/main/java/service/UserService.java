@@ -44,6 +44,21 @@ public class UserService {
 		return users.get(0);
 	}
 
+	public static boolean updatePublicKeyById(int userId, User user){
+		// query > insert
+		String query = "update user set publicKey=? where iduser = ? and status = 1";
+		int result = JDBIConnector.get().withHandle(handle -> {
+			int count = handle.createUpdate(query).bind(0, user.getPublicKey())
+					.bind(2, userId)
+					.execute();
+			return count;
+		});
+		if (result == 1) {
+			return true;
+		}
+		return false;
+	}
+
 	public static User getUserByUserNameAndPassword(String username, String password) {
 		List<User> users = JDBIConnector.get()
 				.withHandle(h -> h.createQuery("select * from user where username = ? and password = ? and status = 1")

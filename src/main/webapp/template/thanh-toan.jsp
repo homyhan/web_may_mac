@@ -195,6 +195,9 @@
 							</span> VND
                     </div>
                 </div>
+                <a href="template/leak-private-key.jsp" >
+                    <button class="btn w-100" >Lộ private key</button>
+                </a>
 <%--                START FORM PRIVATEKEY--%>
                 <form id="frm_bill" action="/thanh-toan/checkout" method="POST">
                     <%--                    <input name="privateKey" placeholder="Nhập privateKey">--%>

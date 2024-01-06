@@ -78,6 +78,13 @@ public class ThanhToan extends HttpServlet {
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
+			case "/leakPrivateKey":
+				try {
+					leakPrivateKey(request, response);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			break;
 				break;
 
 			default:
@@ -90,6 +97,32 @@ public class ThanhToan extends HttpServlet {
 	}
 
 //	START CMT
+	private  void leakPrivateKey(HttpServletRequest request, HttpServletResponse response)
+			throws Exception{
+		HttpSession session = request.getSession(true);
+		User info = (User) session.getAttribute("userLogin");
+
+		String startAt = request.getParameter("startAt");
+		// handle delete order before startAt
+		InvoiceService.deleteInvoiceBeforeStartAt(info.getIduser(), startAt);
+
+		// handle create new public-key, private-key
+		RSA rsa = new RSA();
+		rsa.genKey();
+		info.setPublicKey(Base64.getEncoder().encodeToString(rsa.getPublicKey().getEncoded()));
+
+		String newPrivateKey = Base64.getEncoder().encodeToString(rsa.getPrivateKey().getEncoded());
+		info.setPrivateKey(newPrivateKey);
+		// update info user
+		Boolean isUpdate = UserService.updatePublicKeyById(info.getIduser(),info);
+		System.out.println(isUpdate);
+		session.setAttribute("userLogin", info);
+
+		System.out.println(info);
+		// Gửi giá trị voucherPrice về phản hồi
+		response.setContentType("text/plain");
+		response.getWriter().write(String.valueOf(newPrivateKey));
+	}
 
 	private void checkout(HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
