@@ -225,7 +225,7 @@ public class ThanhToan extends HttpServlet {
 		String newPrivateKey = Base64.getEncoder().encodeToString(rsa.getPrivateKey().getEncoded());
 		info.setPrivateKey(newPrivateKey);
 		// update info user
-		Boolean isUpdate = UserService.updateKeyById(info.getIduser(),info);
+		Boolean isUpdate = UserService.updatePublicKeyById(info.getIduser(),info);
 		System.out.println(isUpdate);
 		session.setAttribute("userLogin", info);
 
