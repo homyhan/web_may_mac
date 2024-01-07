@@ -44,11 +44,11 @@ public class UserService {
 		return users.get(0);
 	}
 
-	public static boolean updatePublicKeyById(int userId, User user){
+	public static boolean updatePublicKeyById(int userId, String publicKey){
 		// query > insert
 		String query = "update user set publicKey=? where iduser = ? and status = 1";
 		int result = JDBIConnector.get().withHandle(handle -> {
-			int count = handle.createUpdate(query).bind(0, user.getPublicKey())
+			int count = handle.createUpdate(query).bind(0, publicKey)
 					.bind(2, userId)
 					.execute();
 			return count;

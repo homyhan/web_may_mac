@@ -23,10 +23,7 @@ import helper.Contants;
 import model.*;
 import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import response.ProductCartResponse;
-import service.AddressService;
-import service.InvoiceService;
-import service.OrderDetailService;
-import service.OrderService;
+import service.*;
 import ultilities.Log4j;
 import ultilities.Message;
 
@@ -78,13 +75,13 @@ public class ThanhToan extends HttpServlet {
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
+				break;
 			case "/leakPrivateKey":
 				try {
 					leakPrivateKey(request, response);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-			break;
 				break;
 
 			default:
@@ -109,12 +106,10 @@ public class ThanhToan extends HttpServlet {
 		// handle create new public-key, private-key
 		RSA rsa = new RSA();
 		rsa.genKey();
-		info.setPublicKey(Base64.getEncoder().encodeToString(rsa.getPublicKey().getEncoded()));
-
+		String newPublicKey = Base64.getEncoder().encodeToString(rsa.getPublicKey().getEncoded());
 		String newPrivateKey = Base64.getEncoder().encodeToString(rsa.getPrivateKey().getEncoded());
-		info.setPrivateKey(newPrivateKey);
 		// update info user
-		Boolean isUpdate = UserService.updatePublicKeyById(info.getIduser(),info);
+		Boolean isUpdate = UserService.updatePublicKeyById(info.getIduser(),newPublicKey);
 		System.out.println(isUpdate);
 		session.setAttribute("userLogin", info);
 

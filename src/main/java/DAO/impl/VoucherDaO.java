@@ -19,7 +19,7 @@ public class VoucherDaO implements IVoucherDaO{
         String sql = "SELECT vouchers.idvouchers, vouchers.nameVoucher, vouchers.startAt, vouchers.finishAt, vouchers.diktat, vouchers.`value`\n" +
                 "FROM vouchers INNER JOIN voucher_users ON vouchers.idvouchers = voucher_users.idvouchers WHERE vouchers.finishAt > CURRENT_DATE()";
         List<Voucher> listMyVoucher = JDBIConnector.get().withHandle(handle -> handle.createQuery(sql)
-                .bind(0, idUser)
+                // .bind(0, idUser)
                 .mapToBean(Voucher.class).stream().collect(Collectors.toList()));
         return listMyVoucher;
     }
