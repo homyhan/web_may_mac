@@ -10,6 +10,7 @@ import model.User;
 import response.InvoiceResponse;
 import response.OrderOrderdetailResponse;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -86,6 +87,15 @@ public class OrderService {
         String query = "SELECT * FROM orders where iduser = ? ";
         List<Order> datas = JDBIConnector.get().withHandle(handle -> {
             return handle.createQuery(query).bind(0, iduser).mapToBean(Order.class).stream()
+                    .collect(Collectors.toList());
+        });
+        return datas;
+    }
+
+    public  static  List<Order> getOrdersByUserIdBeforeStartAt(int idUser, String startAt){
+        String query = "SELECT orders.* from orders join invoice on invoice.idorder = orders.idorder WHERE createAt < ? AND orders.iduser = ?";
+        List<Order> datas = JDBIConnector.get().withHandle(handle -> {
+            return handle.createQuery(query).bind(0, startAt).bind(1, idUser).mapToBean(Order.class).stream()
                     .collect(Collectors.toList());
         });
         return datas;

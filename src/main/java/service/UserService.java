@@ -49,7 +49,7 @@ public class UserService {
 		String query = "update user set publicKey=? where iduser = ? and status = 1";
 		int result = JDBIConnector.get().withHandle(handle -> {
 			int count = handle.createUpdate(query).bind(0, publicKey)
-					.bind(2, userId)
+					.bind(1, userId)
 					.execute();
 			return count;
 		});

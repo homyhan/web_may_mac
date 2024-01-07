@@ -9,24 +9,41 @@
 <html>
 <head>
     <title>Title</title>
+    <link rel="stylesheet" href="../themes/css1/dang-nhap.css">
 </head>
 <body>
   <%@ include file="header.jsp" %>
-    <p>Nếu bạn đang bị lộ private-key vui lòng cung cấp cho chúng tôi thời gian. Những đơn hàng trước đó của bạn sẽ bị xóa khỏi hệ thống và key của bạn sẽ được cập nhập lại. </p>
-    <input type="date" id="leak-start-at" placeholder="Nhập thời gian bạn bị rò rĩ private-key"/>
-<button onclick="handleLeakPrivateKey()">Xác nhận</button>
+  <div class="container-lg">
+      <div class="row justify-content-center">
+          <div class="col-md-5 left">
+              <div class="carousel-inner-login">
+                  <img src="../images/logo-new.jpg" class="login" alt="First slide">
+              </div>
+          </div>
+
+          <div class="col-md-7 right">
+              <p>Nếu bạn đang bị lộ private-key vui lòng cung cấp cho chúng tôi thời gian. Những đơn hàng trước đó của bạn sẽ bị xóa khỏi hệ thống và key của bạn sẽ được cập nhập lại. </p>
+              <input type="date" id="leak-start-at" placeholder="Nhập thời gian bạn bị rò rĩ private-key" style="margin-bottom: 20px"/>
+              <br>
+              <button onclick="handleLeakPrivateKey()" class="btn btn-success" style="width: 100%">Xác nhận</button>
+          </div>
+      </div>
+
+  </div>
+
 
 </body>
 <script>
     function handleLeakPrivateKey(){
         const startAt = document.getElementById('leak-start-at');
-        console.log(startAt.value)
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '/thanh-toan/leakPrivateKey?startAt='+startAt.value, true);
         xhr.onload = function () {
             if (xhr.status === 200) {
                 // Cập nhật giá trị trong trang HTML
                 console.log(xhr.responseText)
+                window.alert('Chúng tôi đã xóa các đơn hàng của bạn thành công. Cảm ơn vì đã thông báo.')
+                window.location.href = '/products'
             }
         };
         xhr.send();

@@ -1,11 +1,12 @@
 package controller.customer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.servlet.RequestDispatcher;
@@ -101,7 +102,7 @@ public class ThanhToan extends HttpServlet {
 
 		String startAt = request.getParameter("startAt");
 		// handle delete order before startAt
-		InvoiceService.deleteInvoiceBeforeStartAt(info.getIduser(), startAt);
+		InvoiceService.updateInvoiceStatusBeforeStartAt(info.getIduser(), startAt);
 
 		// handle create new public-key, private-key
 		RSA rsa = new RSA();
@@ -112,11 +113,87 @@ public class ThanhToan extends HttpServlet {
 		Boolean isUpdate = UserService.updatePublicKeyById(info.getIduser(),newPublicKey);
 		System.out.println(isUpdate);
 		session.setAttribute("userLogin", info);
+		// update all signature order
+		List<Order> listOrder = OrderService.getOrdersByUserIdBeforeStartAt(info.getIduser(), startAt);
+		PrivateKey privateKeyConverted = new RSA().getPrivateKeyFromString(newPrivateKey);
+		for (Order order : listOrder) {
+			Order orderGetFromDB = new Order(order.getIduser(), order.getIdaddress(), order.getSubtotal(), order.getItemdiscount(), order.getShipping(), order.getIdcoupons(), order.getGrandtotal(), order.getStatus(), order.getContent());
+			byte[] byteOrder = toByteArray(orderGetFromDB);
+
+			int idOrder = order.getIdorder();
+			List<OrderDetail> orDetailList = OrderDetailService.getProductCategory(idOrder);
+
+
+			byte[] rsArrOrderDetail = new byte[0];
+			List<OrderDetail> odDetailListNew = new ArrayList<>();
+			for (OrderDetail od : orDetailList) {
+				OrderDetail odD = new OrderDetail(idOrder, od.getIdproduct(), od.getQuantity(), od.getSize(), od.getPrice(), od.getDiscount(), od.getIsmeasure(), od.getWeight(), od.getHeight(), od.getRound1(), od.getRound2(), od.getRound3(), od.getContent());
+				odDetailListNew.add(odD);
+			}
+
+			for (OrderDetail o: odDetailListNew){
+				byte[] odToArrayByte = toByteArray(o);
+				// Tạo mảng mới có kích thước là tổng kích thước của mảng cũ và mảng mới
+				byte[] newArray = new byte[rsArrOrderDetail.length + odToArrayByte.length];
+
+				// Sao chép dữ liệu từ mảng cũ và mảng mới vào mảng mới
+				System.arraycopy(rsArrOrderDetail, 0, newArray, 0, rsArrOrderDetail.length);
+				System.arraycopy(odToArrayByte, 0, newArray, rsArrOrderDetail.length, odToArrayByte.length);
+
+				// Gán mảng mới cho mảng lớn
+				rsArrOrderDetail = newArray;
+
+			}
+
+			List<Invoice> invoiceListA = InvoiceService.getDataInvoiceByIdOrder(idOrder);
+
+			Invoice invoiceOne = invoiceListA.get(0);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+			String formattedDate = dateFormat.format(invoiceOne.getCreateAt());
+
+			Invoice invoiceObj = new Invoice(info.getIduser(), idOrder, invoiceOne.getMode(), formattedDate, invoiceOne.getContent());
+			byte[] invoiceByte = toByteArray(invoiceObj);
+
+			byte[] rsConcate = concatenateByteArrays(byteOrder, rsArrOrderDetail, invoiceByte);
+			byte[] hashConcate = hashData(rsConcate);
+			byte[] signature = signHashOrder(hashConcate, privateKeyConverted);
+			byte[] okSignature = Arrays.copyOfRange(signature, 0, 256);
+
+			int updatedOrder = OrderService.updateSignatureForOrder(idOrder, Base64.getEncoder().encodeToString(okSignature));
+
+		}
+		// save private key
+		savePrivateKeyToFile(newPrivateKey);
 
 		System.out.println(info);
 		// Gửi giá trị voucherPrice về phản hồi
 		response.setContentType("text/plain");
 		response.getWriter().write(String.valueOf(newPrivateKey));
+	}
+
+	private void savePrivateKeyToFile(String privateKey) throws IOException {
+		// Lấy ngày và giờ hiện tại
+		LocalDateTime currentDateTime = LocalDateTime.now();
+
+		// Định dạng chuỗi
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd_MM_yyyy_HH_mm_ss");
+		String formattedDateTime = currentDateTime.format(formatter);
+
+		// Thực hiện lưu file vào thư mục hoặc nơi khác
+		// Ví dụ: Lưu file vào thư mục "private_keys"
+		String fileName = formattedDateTime+"_privatekey.txt";
+		String directoryPath = "D:\\HAN\\AT";
+
+		File directory = new File(directoryPath);
+		if (!directory.exists()) {
+			directory.mkdirs(); // Tạo thư mục nếu nó chưa tồn tại
+		}
+
+		File file = new File(directory, fileName);
+
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+			writer.write(privateKey);
+		}
 	}
 
 	private void checkout(HttpServletRequest request, HttpServletResponse response)
