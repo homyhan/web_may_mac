@@ -124,7 +124,10 @@
 								<%
 								if (request.getAttribute("error") != null) {
 								%>
-								<label style="color: red"><%=request.getAttribute("error")%></label>
+<%--								<label style="color: red"><%=request.getAttribute("error")%></label>--%>
+								<div class="alert alert-danger mt-3" role="alert">
+									<%=request.getAttribute("error")%>
+								</div>
 								<%
 								}
 								%>
@@ -155,7 +158,7 @@
 							<input type="hidden" name="privateKeyReq" id="hiddenPrivateKey">
 
 
-							<!-- Thêm vào bên trong thẻ form -->R
+							<!-- Thêm vào bên trong thẻ form -->
 							<input type="hidden" id="selectedFolderPath" name="selectedFolderPath" value="">
 
 							<%--							END --%>

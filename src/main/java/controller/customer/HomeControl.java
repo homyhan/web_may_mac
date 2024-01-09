@@ -38,7 +38,7 @@ public class HomeControl extends HttpServlet {
         if(info!=null){
 //        if(info!=null){
             System.out.println(info.getIduser());
-            List<Order> orderHistoryList = InvoiceService.getDataOrderHistory(info.getIduser());
+//            List<Order> orderHistoryList = InvoiceService.getDataOrderHistory(info.getIduser());
 //        request.setAttribute("userAdminList", userAdminList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
 //        request.getRequestDispatcher("/quan-tri-admin/khach-hang/khach-hang.jsp").forward(request, response);
 //            System.out.println("Order history");

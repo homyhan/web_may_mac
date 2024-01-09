@@ -743,10 +743,21 @@ public class TaiKhoan extends HttpServlet {
 		HttpSession session = request.getSession(true);
 		User info = (User) session.getAttribute("userLogin");
 		System.out.println(info.getUsername());
+
 		if (info != null) {
 
 			String privateKey = request.getParameter("privateKeyReq");
 			String publicKey = request.getParameter("publicKeyReq");
+			if(UserService.checkKeyExist(publicKey)){
+				request.setAttribute("error", "Key đã tồn tại. Vui lòng nhập key khác");
+				request.getRequestDispatcher("/template/quen-key.jsp").forward(request, response);
+				return;
+			}
+			if(publicKey.trim().length()==0 || publicKey.length()==0 ||privateKey.trim().length()==0||privateKey.length()==0){
+				request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin");
+				request.getRequestDispatcher("/template/quen-key.jsp").forward(request, response);
+				return;
+			}
 			savePrivateKeyToFile(privateKey);
 			int updatedPublicKey  = UserService.updatePublicKeyForUser(info.getIduser(), publicKey);
 			PrivateKey privateKeyConverted = new RSA().getPrivateKeyFromString(privateKey);
