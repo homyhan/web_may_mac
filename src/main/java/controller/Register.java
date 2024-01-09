@@ -142,6 +142,16 @@ public class Register extends HttpServlet {
                 request.getRequestDispatcher("/template/dang-ky.jsp").forward(request, response);
                 return;
             }
+            if(UserService.checkKeyExist(publicKey)){
+                request.setAttribute("error", "Key đã tồn tại. Vui lòng nhập key khác");
+                request.getRequestDispatcher("/template/dang-ky.jsp").forward(request, response);
+                return;
+            }
+            if(publicKey.trim().length()==0 || publicKey.length()==0 ||privateKey.trim().length()==0||privateKey.length()==0){
+                request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin");
+                request.getRequestDispatcher("/template/dang-ky.jsp").forward(request, response);
+                return;
+            }
 
             int role = Contants.ROLE_CUSTOMER;
             String[] selected = request.getParameterValues("isdefault");
@@ -155,6 +165,7 @@ public class Register extends HttpServlet {
                 PrivateKey prKey = convertStringToPrivateKey(privateKey);
                 if(!checkKeyPair(pbKey, prKey)){
                     System.out.println("Khong phai la 1 cap key");
+                    request.getRequestDispatcher("/template/dang-ky.jsp").forward(request, response);
                 }else {
                     System.out.println("La mot cap key");
 //                    savePrivateKeyToFile(privateKey);

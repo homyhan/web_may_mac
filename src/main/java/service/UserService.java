@@ -345,6 +345,18 @@ public class UserService {
 		});
 	}
 
+	//CHECK KEY IN DB
+	public static boolean checkKeyExist(String publickey) {
+		List<User> users = JDBIConnector.get()
+				.withHandle(h -> h.createQuery("select * from user where publickey = ? and status = 1").bind(0, publickey)
+						.mapToBean(User.class).stream().collect(Collectors.toList()));
+
+		System.out.println(publickey);
+		if (users.size() == 0)
+			return false;
+		return true;
+	}
+
 	public static void main(String[] args) {
 		List<User> users = JDBIConnector.get()
 				.withHandle(h -> h.createQuery("select * from user where username = ? and status = 1")

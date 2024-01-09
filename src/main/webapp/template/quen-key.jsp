@@ -82,7 +82,7 @@
                                     <input type="hidden" name="privateKeyReq" id="hiddenPrivateKey">
 
 
-                                    <!-- Thêm vào bên trong thẻ form -->R
+                                    <!-- Thêm vào bên trong thẻ form -->
                                     <input type="hidden" id="selectedFolderPath" name="selectedFolderPath" value="">
 
                                     <%--							END --%>
@@ -106,7 +106,16 @@
                                 <%--                                %>--%>
                                 <%--                            </div>--%>
                                 <%--                            <hr>--%>
-
+                                    <%
+								if (request.getAttribute("error") != null) {
+								%>
+                                <%--								<label style="color: red"><%=request.getAttribute("error")%></label>--%>
+                                <div class="alert alert-danger mt-3" role="alert">
+                                    <%=request.getAttribute("error")%>
+                                </div>
+                                    <%
+								}
+								%>
                                 <button  class="btn btn-success" type="submit">
                                     Submit</button>
 
