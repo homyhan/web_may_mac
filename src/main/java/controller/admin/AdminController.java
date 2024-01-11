@@ -404,8 +404,8 @@ public class AdminController extends HttpServlet {
 		// login thành công đã có user
 //		User info = (User) session.getAttribute("userLogin");
 		List<InvoiceResponse> invoiceAdminList = InvoiceService.getListInvoice4Admin();
-		request.setAttribute("invoiceAdminList", invoiceAdminList);// lưu thông tin đơn hàng chuyển qua giao diện hiển
-		System.out.println(invoiceAdminList);											// thị
+//		request.setAttribute("invoiceAdminList", invoiceAdminList);// lưu thông tin đơn hàng chuyển qua giao diện hiển
+//		System.out.println(invoiceAdminList);											// thị
 //		request.getRequestDispatcher("/quan-tri-admin/don-hang/ql-don.jsp").forward(request, response);
 //		System.out.println("chuyển đến trang đơn hàng");
 
@@ -451,6 +451,9 @@ public class AdminController extends HttpServlet {
 			}
 
 		}
+		List<InvoiceResponse> invoiceAdminList2 = InvoiceService.getListInvoice4Admin();
+		request.setAttribute("invoiceAdminList", invoiceAdminList2);// lưu thông tin đơn hàng chuyển qua giao diện hiển
+		System.out.println(invoiceAdminList);
 		request.setAttribute("cancelledInvoices", cancelledInvoices);
 		request.getRequestDispatcher("/quan-tri-admin/don-hang/ql-don.jsp").forward(request, response);
 	}

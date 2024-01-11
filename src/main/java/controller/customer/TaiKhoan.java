@@ -91,7 +91,7 @@ public class TaiKhoan extends HttpServlet {
 		}
 		// login thành công đã có user
 		User info = (User) session.getAttribute("userLogin");
-		List<InvoiceResponse> invoiceList = InvoiceService.getListInvoiceByUserId(info.getIduser());
+//		List<InvoiceResponse> invoiceList = InvoiceService.getListInvoiceByUserId(info.getIduser());
 
 //		String publicKey = (String) session.getAttribute("publicKeySession");
 		String publicKey  = UserService.getUserById(info.getIduser()).getPublicKey();
@@ -215,6 +215,7 @@ public class TaiKhoan extends HttpServlet {
 			sendEmail(emailCustomer,  listOrderChanged);
 			System.out.println("Da gui email thanh cong");
 		}
+		List<InvoiceResponse> invoiceList = InvoiceService.getListInvoiceByUserId(info.getIduser());
 		request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
 		request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
 	}
