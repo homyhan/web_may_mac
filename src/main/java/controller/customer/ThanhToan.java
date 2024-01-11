@@ -188,7 +188,15 @@ public class ThanhToan extends HttpServlet {
 
 		}
 
-		Order order = new Order(iduser, idaddress, subtotal, itemdiscount, shipping, idcoupons, grandtotal, 0, "");
+		// Inside your servlet's doPost() or doGet() method:
+		String paymentMethod = request.getParameter("paymentMethod");
+
+		System.out.println("Print payment");
+
+		int paymentMethodValue = Integer.parseInt(paymentMethod);
+		System.out.println(paymentMethodValue);
+
+		Order order = new Order(iduser, idaddress, subtotal, itemdiscount, shipping, idcoupons, grandtotal, paymentMethodValue, "");
 		Order orderKhac = new Order(40, 11111, 100.0f, itemdiscount, shipping, idcoupons, grandtotal, 0, "");
 		byte[] data = toByteArray(order);
 		String hash1 = hashData2412(data);

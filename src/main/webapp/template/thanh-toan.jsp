@@ -68,19 +68,19 @@
                 <%
                     }
                 %>
-                <div class="my-3">
-                    <div class="form-check">
-                        <input id="credit" name="paymentMethod" type="radio"
-                               class="form-check-input" checked required> <label
-                            class="form-check-label" for="credit">Thanh toán trực
-                        tiếp khi giao hàng</label>
-                    </div>
-                    <div class="form-check">
-                        <input id="credit" name="paymentMethod" type="radio"
-                               class="form-check-input"> <label
-                            class="form-check-label" for="credit">Thẻ tín dụng</label>
-                    </div>
-                </div>
+<%--                <div class="my-3">--%>
+<%--                    <div class="form-check">--%>
+<%--                        <input id="credit" name="paymentMethod" type="radio"--%>
+<%--                               class="form-check-input" checked required> <label--%>
+<%--                            class="form-check-label" for="credit">Thanh toán trực--%>
+<%--                        tiếp khi giao hàng</label>--%>
+<%--                    </div>--%>
+<%--                    <div class="form-check">--%>
+<%--                        <input id="credit1" name="paymentMethod" type="radio"--%>
+<%--                               class="form-check-input"> <label--%>
+<%--                            class="form-check-label" for="credit">Thẻ tín dụng</label>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
                 <div class="card">
                     <div class="card-body">
                         <div class="radio-content-input">
@@ -198,6 +198,21 @@
 <%--                START FORM PRIVATEKEY--%>
                 <form id="frm_bill" action="/thanh-toan/checkout" method="POST">
                     <%--                    <input name="privateKey" placeholder="Nhập privateKey">--%>
+
+                        <div class="my-3">
+                            <div class="form-check">
+                                <input id="credit" value=0 name="paymentMethod" type="radio"
+                                       class="form-check-input" checked required> <label
+                                    class="form-check-label" for="credit">Thanh toán trực
+                                tiếp khi giao hàng</label>
+                            </div>
+                            <div class="form-check">
+                                <input id="credit1" value=1 name="paymentMethod" type="radio"
+                                       class="form-check-input"> <label
+                                    class="form-check-label" for="credit">Thẻ tín dụng</label>
+                            </div>
+                        </div>
+
                     <input type="text" class="form-control"  placeholder="Nhập privatekey" name="privateKey" required>
 
                     <% String error = request.getParameter("errorPrivateKey"); %>
