@@ -213,7 +213,10 @@
                             </div>
                         </div>
 
-                    <input type="text" class="form-control"  placeholder="Nhập privatekey" name="privateKey" required>
+<%--                    <input type="text" class="form-control"  placeholder="Nhập privatekey" name="privateKey" required>--%>
+
+                        <input type="hidden" class="form-control" name="privateKey" id="privateKeyInput">
+                    <input type="file" class="form-control" name="privateKeyFile" onchange="handleFileSelect(event)" enctype="multipart/form-data">
 
                     <% String error = request.getParameter("errorPrivateKey"); %>
                     <% if (error != null) { %>
@@ -265,6 +268,38 @@
 
         document.getElementById('total').innerText = total.toFixed(3);
     }
+    //HANDLE CHANGE FILE
+    function handleFileSelect(event) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            // Tạo một đối tượng FileReader
+            const reader = new FileReader();
+
+            // // Đặt hàm callback khi đọc hoàn tất
+            // reader.onload = function(e) {
+            //     // e.target.result chứa nội dung của tệp tin
+            //     console.log("Nội dung của tệp tin:", e.target.result);
+            // };
+
+            // Đặt hàm callback khi đọc hoàn tất
+            reader.onload = function(e) {
+                // e.target.result chứa nội dung của tệp tin
+
+                // Gán nội dung vào thẻ input hidden
+                const privateKeyInput = document.getElementById("privateKeyInput");
+                privateKeyInput.value = e.target.result;
+            };
+
+            // // Đọc nội dung của tệp tin với định dạng UTF-8
+            // reader.readAsText(file);
+
+            // Đọc nội dung của tệp tin với định dạng UTF-8
+            reader.readAsText(file);
+        }
+    }
+    // HANDLE CHANGE FILE
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
 </html>

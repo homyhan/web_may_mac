@@ -20,6 +20,13 @@
       <version>4.0.1</version>
     </dependency>
 
+    <!-- Apache Commons IO -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version> <!-- Chọn phiên bản phù hợp -->
+    </dependency>
+
 
     <!--    Thêm-->
     <dependency>

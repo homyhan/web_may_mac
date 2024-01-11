@@ -11,17 +11,16 @@ import java.util.*;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 
 import DAO.IVoucherDaO;
 import DAO.impl.VoucherDaO;
 import controller.OrderFeeController;
 import helper.Contants;
 import model.*;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import response.ProductCartResponse;
 import service.*;
@@ -29,6 +28,7 @@ import ultilities.Log4j;
 import ultilities.Message;
 
 @WebServlet(name = "ThanhToan", value = "/thanh-toan/*")
+@MultipartConfig
 public class ThanhToan extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -252,6 +252,8 @@ public class ThanhToan extends HttpServlet {
 		if (coupons != null) {
 			idcoupons = coupons.getIdcoupons();
 		}
+
+
 
 //		// TẠO CHỮ KÝ SỐ
 		String privateKey = request.getParameter("privateKey");
