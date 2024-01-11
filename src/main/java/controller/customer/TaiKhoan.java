@@ -105,6 +105,8 @@ public class TaiKhoan extends HttpServlet {
 		System.out.println("In danh sach don hang");
 		System.out.println(listOrder.toString());
 		ArrayList<Order> listOrderChanged = new ArrayList<>();
+
+		int count=0;
 //		Order orderGetFromDB = new Order();
 		for (Order order : listOrder) {
 			Order orderGetFromDB = new Order(order.getIduser(), order.getIdaddress(), order.getSubtotal(), order.getItemdiscount(), order.getShipping(), order.getIdcoupons(), order.getGrandtotal(), order.getStatus(), order.getContent());
@@ -151,14 +153,18 @@ public class TaiKhoan extends HttpServlet {
 			for (Order or : listOrderChanged){
 				List<Invoice> invoicesL = getListInvoiceByIdOrder(or.getIdorder());
 				Invoice invoice = invoicesL.get(0);
-				if(listOrderChanged.size()>0 && invoice.getStatus()!=0){
-					System.out.println("So luong don hang bi thay doi la: ");
-					System.out.println(listOrderChanged.size());
-					System.out.println(listOrderChanged);
-					updateInvoiceStatus(invoice.getIdinvoice(), 0);
-					sendEmail(emailCustomer,  listOrderChanged);
-					System.out.println("Da gui email thanh cong");
+				updateInvoiceStatus(invoice.getIdinvoice(), 0);
+				if(invoice.getStatus()!=0){
+					count++;
 				}
+//				if(listOrderChanged.size()>0 && invoice.getStatus()!=0){
+//					System.out.println("So luong don hang bi thay doi la: ");
+//					System.out.println(listOrderChanged.size());
+//					System.out.println(listOrderChanged);
+//					updateInvoiceStatus(invoice.getIdinvoice(), 0);
+//					sendEmail(emailCustomer,  listOrderChanged);
+//					System.out.println("Da gui email thanh cong");
+//				}
 			}
 
 			System.out.println("In tai khoan");
@@ -200,6 +206,14 @@ public class TaiKhoan extends HttpServlet {
 
 
 
+		}
+		if(listOrderChanged.size()>0 && count==listOrderChanged.size()){
+			System.out.println("So luong don hang bi thay doi la: ");
+			System.out.println(listOrderChanged.size());
+			System.out.println(listOrderChanged);
+
+			sendEmail(emailCustomer,  listOrderChanged);
+			System.out.println("Da gui email thanh cong");
 		}
 		request.setAttribute("invoiceList", invoiceList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
 		request.getRequestDispatcher("/thong-tin-khach-hang/don-hang.jsp").forward(request, response);
@@ -574,9 +588,10 @@ public class TaiKhoan extends HttpServlet {
 
 		ArrayList<Product> prodList = new ArrayList<>();
 
-		ArrayList<Invoice> invoicesList = new ArrayList<>();
+		ArrayList<Invoice> invoicesListCheckoutOnl = new ArrayList<>();
 
 		String contentTd = "";
+		String idInvoiceCheckoutOnlStr ="";
 
 		final String fromEmail = "thienan21215@gmail.com"; // Email của bạn
 		final String password = "wqubwaintvcbufnn"; // Mật khẩu email của bạn
@@ -596,14 +611,22 @@ public class TaiKhoan extends HttpServlet {
 //		int maHoaDon = Integer.parseInt(printIdOrder(orderList));
 
 
-		for (Integer id : idList){
+		for (Order order : orderList){
 			System.out.println("Hoa don ma don hang bi thay doi: ");
 
-			System.out.println(getListInvoiceByIdOrder(id).toString());
-			Product prod = ProductService.getProductByIdOrder(id).get(0);
+			Order orderObj = OrderService.getDetailByOrderId(order.getIdorder());
+
+			System.out.println(getListInvoiceByIdOrder(order.getIdorder()).toString());
+			Product prod = ProductService.getProductByIdOrder(order.getIdorder()).get(0);
 //			prodList
-			Invoice inv = getListInvoiceByIdOrder(id).get(0);
+			Invoice inv = getListInvoiceByIdOrder(order.getIdorder()).get(0);
 			idInvoice.add(inv.getIdinvoice());
+			if(orderObj.getStatus()==1){
+				invoicesListCheckoutOnl.add(inv);
+			}
+			for (Invoice invoice : invoicesListCheckoutOnl){
+				idInvoiceCheckoutOnlStr+=invoice.getIdinvoice()+", ";
+			}
 			System.out.println("ID hoa don: ");
 			System.out.println(inv.getIdinvoice());
 //			updateInvoiceStatus(inv.getIdinvoice(), 0);
@@ -632,6 +655,7 @@ public class TaiKhoan extends HttpServlet {
 					"    <p>Mã đơn hàng bị thay đổi là: "+printIdOrder(idInvoice)+" \n"  +
 					"	<p>Thông tin sản phẩm: </p>"+
 					contentTd+
+					"	<p>Trong đó các hóa đơn bạn đã thanh toán là: </p>"+idInvoiceCheckoutOnlStr+" \n"  +
 					"    <p>Để bảo vệ tài khoản của quý khách được an toàn chúng tôi sẽ tiến hành hủy đơn hàng. Đối với các đơn hàng đã thanh toán G15 sẽ hoàn trả lại số tiền cho quý khách</p>\n" +
 					"    <p>Chúng tôi chân thành xin lỗi vì sự bất tiện này</p>\n" +
 					"    <p>Cảm ơn quý khách đã tin chọn G15</p>\n" +
