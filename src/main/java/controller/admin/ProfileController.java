@@ -51,7 +51,9 @@ public class ProfileController extends HttpServlet {
 			response.sendRedirect("/sign-in");
 			return;
 		}
+
 		User info = (User) session.getAttribute("userLogin");// mai
+
 		System.out.println(info);
 		String lastname = request.getParameter("lastname");// maimai
 		String firstname = request.getParameter("firstname");

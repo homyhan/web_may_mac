@@ -323,6 +323,7 @@ public class AdminController extends HttpServlet {
 
 	private void detailAccount(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+
 		int iduser = Integer.parseInt(request.getParameter("iduser"));
 		System.out.println(iduser);
 		User data = UserService.getInstance().getDetailUserByIdUser(iduser);
@@ -334,6 +335,17 @@ public class AdminController extends HttpServlet {
 
 	private void detailOrder(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+
+		HttpSession session = request.getSession(true);
+		if (session.getAttribute("userLogin") == null) {
+			response.sendRedirect("/sign-in");
+			return;
+		}
+		User user = (User) session.getAttribute("userLogin");
+		if(user.getRole()!=2){
+			response.sendRedirect("/sign-in");
+			return;
+		}
 
 		int idOrder = Integer.parseInt(request.getParameter("idOrder"));
 		System.out.println(idOrder);
@@ -361,6 +373,11 @@ public class AdminController extends HttpServlet {
 			response.sendRedirect("/sign-in");
 			return;
 		}
+		User user = (User) session.getAttribute("userLogin");
+		if(user.getRole()!=2){
+			response.sendRedirect("/sign-in");
+			return;
+		}
 		// login thành công đã có user
 		List<User> userAdminList = UserService.getData();
 		request.setAttribute("userAdminList", userAdminList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
@@ -374,7 +391,13 @@ public class AdminController extends HttpServlet {
 	private void showAdminInvoice(HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		HttpSession session = request.getSession(true);
+		User user = (User) session.getAttribute("userLogin");
 		if (session.getAttribute("userLogin") == null) {
+			response.sendRedirect("/sign-in");
+			return;
+		}
+
+		if(user.getRole()!=2){
 			response.sendRedirect("/sign-in");
 			return;
 		}

@@ -57,6 +57,11 @@ public class AdminPermissionController extends HttpServlet {
 			response.sendRedirect("/sign-in");
 			return;
 		}
+		User user = (User) session.getAttribute("userLogin");
+		if(user.getRole()!=2){
+			response.sendRedirect("/sign-in");
+			return;
+		}
 		// login thành công đã có user
 		List<User> userAdminPessionList = UserService.getData();
 		request.setAttribute("userAdminPessionList", userAdminPessionList);
@@ -80,6 +85,11 @@ public class AdminPermissionController extends HttpServlet {
 			response.sendRedirect("/sign-in");
 			return;
 		}
+		User user = (User) session.getAttribute("userLogin");
+		if(user.getRole()!=2){
+			response.sendRedirect("/sign-in");
+			return;
+		}
 		// login thành công đã có user
 		List<Role> roleList = RoleSevice.getData();
 		request.setAttribute("roleList", roleList);// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
@@ -95,7 +105,16 @@ public class AdminPermissionController extends HttpServlet {
 			throws ServletException, IOException {
 		int idrole = Integer.parseInt(request.getParameter("idrole"));
 		System.out.println("idrole: " + idrole);
-
+		HttpSession session = request.getSession(true);
+		if (session.getAttribute("userLogin") == null) {
+			response.sendRedirect("/sign-in");
+			return;
+		}
+		User user = (User) session.getAttribute("userLogin");
+		if(user.getRole()!=2){
+			response.sendRedirect("/sign-in");
+			return;
+		}
 		// lấy tất cả các permision của hệ thống
 		// lưu thông tin đơn hàng chuyển qua giao diện hiển thị
 		List<Permission> showPemision = PemisionService.getPermisson();
