@@ -101,6 +101,7 @@ public class ThanhToan extends HttpServlet {
 		User info = (User) session.getAttribute("userLogin");
 		// biến dùng để cập nhập trạng thái đơn hàng từ ngày
 		String startAt = request.getParameter("startAt");
+		System.out.println(startAt);
 		// cập nhập lại các hóa đơn = 0 sau lúc lộ key
 		InvoiceService.updateInvoiceStatusBeforeStartAt(info.getIduser(), startAt);
 

@@ -112,7 +112,7 @@
 											data-bs-popper="none">
 										<a href="<c:url value='/thong-tin-khach-hang/quan-ly-tai-khoan.jsp'/>"
 										   class="dropdown-item">Tài khoản</a>
-										<a href="template/leak-private-key.jsp"
+										<a href="<c:url value='/template/leak-private-key.jsp'/>"
 										   class="dropdown-item">Lộ private-key</a>
 										<hr>
 										<!-- <a href="khach-hang.jsp"  class="dropdown-item"  >Cài đặt</a> -->
