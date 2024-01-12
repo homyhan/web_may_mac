@@ -43,7 +43,14 @@ public class InvoiceService {
 		return false;
 	}
 
-	public static boolean updateInvoiceStatusBeforeStartAt(int userId, String startAt){
+	public static boolean updateInvoiceStatusBeforeStartAt(int userId, String startAt, String endAt){
+		if(!endAt.isEmpty()){
+			String query = "update invoice set status = 0 where idusers = ? AND createAt > ? AND createAt < ?";
+			int result = JDBIConnector.get().withHandle(handle -> {
+				return handle.createUpdate(query).bind(0, userId).bind(1, startAt).bind(2, endAt).execute();
+			});
+			return true;
+		}
 		String query = "update invoice set status = 0 where idusers = ? AND createAt > ?";
 		int result = JDBIConnector.get().withHandle(handle -> {
 			return handle.createUpdate(query).bind(0, userId).bind(1, startAt).execute();

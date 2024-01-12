@@ -99,9 +99,6 @@ public class ThanhToan extends HttpServlet {
 			throws Exception{
 		HttpSession session = request.getSession(true);
 		User info = (User) session.getAttribute("userLogin");
-		// biến dùng để cập nhập trạng thái đơn hàng từ ngày
-		String startAt = request.getParameter("startAt");
-		System.out.println(startAt);
 
 		// tạo  public-key, private-key mới
 		RSA rsa = new RSA();
@@ -161,8 +158,13 @@ public class ThanhToan extends HttpServlet {
 			int updatedOrder = OrderService.updateSignatureForOrder(idOrder, Base64.getEncoder().encodeToString(okSignature));
 
 		}
+		// biến dùng để cập nhập trạng thái đơn hàng từ ngày
+		String startAt = request.getParameter("startAt");
+		String endAt = request.getParameter("endAt");
+		System.out.println("startAt:" + startAt);
+		System.out.println("endAt" + endAt);
 		// cập nhập lại các hóa đơn = 0 sau lúc lộ key
-		InvoiceService.updateInvoiceStatusBeforeStartAt(info.getIduser(), startAt);
+		InvoiceService.updateInvoiceStatusBeforeStartAt(info.getIduser(), startAt, endAt);
 		// lưu lại giá trị private-key mới
 		savePrivateKeyToFile(newPrivateKey);
 
