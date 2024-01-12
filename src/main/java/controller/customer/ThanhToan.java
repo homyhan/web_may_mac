@@ -99,21 +99,21 @@ public class ThanhToan extends HttpServlet {
 			throws Exception{
 		HttpSession session = request.getSession(true);
 		User info = (User) session.getAttribute("userLogin");
-
+		// biến dùng để cập nhập trạng thái đơn hàng từ ngày
 		String startAt = request.getParameter("startAt");
-		// handle delete order before startAt
+		// cập nhập lại các hóa đơn = 0 sau lúc lộ key
 		InvoiceService.updateInvoiceStatusBeforeStartAt(info.getIduser(), startAt);
 
-		// handle create new public-key, private-key
+		// tạo  public-key, private-key mới
 		RSA rsa = new RSA();
 		rsa.genKey();
 		String newPublicKey = Base64.getEncoder().encodeToString(rsa.getPublicKey().getEncoded());
 		String newPrivateKey = Base64.getEncoder().encodeToString(rsa.getPrivateKey().getEncoded());
-		// update info user
+		// cập nhập lại thông tin user
 		Boolean isUpdate = UserService.updatePublicKeyById(info.getIduser(),newPublicKey);
 		System.out.println(isUpdate);
 		session.setAttribute("userLogin", info);
-		// update all signature order
+		// cập nhập các đơn hàng cũ
 		List<Order> listOrder = OrderService.getOrdersByUserIdBeforeStartAt(info.getIduser(), startAt);
 		PrivateKey privateKeyConverted = new RSA().getPrivateKeyFromString(newPrivateKey);
 		for (Order order : listOrder) {
@@ -162,7 +162,7 @@ public class ThanhToan extends HttpServlet {
 			int updatedOrder = OrderService.updateSignatureForOrder(idOrder, Base64.getEncoder().encodeToString(okSignature));
 
 		}
-		// save private key
+		// lưu lại giá trị private-key mới
 		savePrivateKeyToFile(newPrivateKey);
 
 		System.out.println(info);

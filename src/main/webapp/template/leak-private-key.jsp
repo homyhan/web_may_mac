@@ -22,7 +22,7 @@
           </div>
 
           <div class="col-md-7 right">
-              <p>Nếu bạn đang bị lộ private-key vui lòng cung cấp cho chúng tôi thời gian. Những đơn hàng trước đó của bạn sẽ bị xóa khỏi hệ thống và key của bạn sẽ được cập nhập lại. </p>
+              <p>Nếu bạn đang bị lộ private-key vui lòng cung cấp cho chúng tôi thời gian. Những đơn hàng sau thời gian này của bạn sẽ bị xóa khỏi hệ thống và key của bạn sẽ được cập nhập lại. </p>
               <input type="date" id="leak-start-at" placeholder="Nhập thời gian bạn bị rò rĩ private-key" style="margin-bottom: 20px"/>
               <br>
               <button onclick="handleLeakPrivateKey()" class="btn btn-success" style="width: 100%">Xác nhận</button>
