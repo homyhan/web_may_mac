@@ -24,6 +24,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @WebServlet(name = "Register ", value = "/register")
 public class Register extends HttpServlet {
@@ -139,6 +141,11 @@ public class Register extends HttpServlet {
         } else {
             if (UserService.checkUserNameExist(userName)) {
                 request.setAttribute("error", "Bạn đã có tài khoản. Vui lòng đăng nhập");
+                request.getRequestDispatcher("/template/dang-ky.jsp").forward(request, response);
+                return;
+            }
+            if (!isStrongPassword(password)) {
+                request.setAttribute("error", "Mật khẩu phải có ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
                 request.getRequestDispatcher("/template/dang-ky.jsp").forward(request, response);
                 return;
             }
@@ -314,5 +321,17 @@ public class Register extends HttpServlet {
         RSA rsa = new RSA();
         PrivateKey privateKey = rsa.getPrivateKeyFromString(str);
         return privateKey;
+    }
+
+    private static boolean isStrongPassword(String password) {
+        // Biểu thức chính quy để kiểm tra
+        String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!])(?=.*[a-zA-Z0-9@#$%^&+=!]).{8,}$";
+
+        // Tạo Pattern và Matcher
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(password);
+
+        // Kiểm tra xem chuỗi có khớp với biểu thức chính quy hay không
+        return matcher.matches();
     }
 }
